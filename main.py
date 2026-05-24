@@ -17,8 +17,10 @@ import uuid
 import shutil
 from pathlib import Path
 from typing import Final
-
-import magic
+try:
+    import magic
+except (ImportError, OSError):
+    magic = None
 import PyPDF2
 import docx
 from fastapi import FastAPI, File, UploadFile, HTTPException, Request, status, Depends
@@ -227,15 +229,18 @@ def _validate_file_size(content: bytes) -> None:
 def _validate_mime_type(content: bytes, expected_extension: str) -> str:
     """
     Dosyanın gerçek MIME türünü magic bytes ile doğrular.
-    python-magic Windows'ta hata verirse standart mimetypes kütüphanesine düşer.
+    python-magic Windows'ta veya kütüphane eksikse standart mimetypes kütüphanesine düşer.
     """
     allowed_mimes = ALLOWED_TYPES[expected_extension]
     detected_mime = ""
     
     try:
-        detected_mime = magic.from_buffer(content, mime=True)
+        if magic is not None:
+            detected_mime = magic.from_buffer(content, mime=True)
+        else:
+            raise Exception("magic module not loaded")
     except Exception as e:
-        # Windows'ta "could not find any valid magic files" hatası alırsak:
+        # Windows'ta veya Linux ortamında libmagic yüklenemediyse fallback yap:
         import mimetypes
         guessed_mime, _ = mimetypes.guess_type(f"file{expected_extension}")
         detected_mime = guessed_mime or "application/octet-stream"
