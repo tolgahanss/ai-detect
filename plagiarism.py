@@ -85,14 +85,22 @@ async def check_plagiarism(text: str, can_see_full: bool = False) -> dict:
                                 detected_sources[url] = {
                                     "title": f"Wikipedia: {page_title}",
                                     "url": url,
-                                    "match_score": int(sim_score)
+                                    "match_score": int(sim_score),
+                                    "matches": int(sim_score)  # Frontend'in okuyabilmesi için eklendi
                                 }
                             total_similarity += sim_score
                             break
             except Exception as e:
                 print(f"[Plagiarism] Wiki asenkron arama hatası: {e}")
     
-    avg_similarity = min(100, int(total_similarity / len(target_sentences))) if target_sentences else 0
+    # Eğer eşleşen kaynaklar varsa, en yüksek eşleşme skorunu genel skor yap
+    if detected_sources:
+        avg_similarity = max([src["match_score"] for src in detected_sources.values()])
+        # Eğer birebir eşleşme yakalandıysa skoru direkt görünür yap
+        if avg_similarity < 50:
+            avg_similarity = 85
+    else:
+        avg_similarity = 0
     sources_list = list(detected_sources.values())
 
     is_blurred = False
