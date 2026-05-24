@@ -34,6 +34,7 @@ ALTER TABLE public.users ADD COLUMN IF NOT EXISTS hashed_password TEXT;
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS full_name TEXT;
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS plan_type TEXT DEFAULT 'free';
 
 -- Username için UNIQUE constraint (aynı kullanıcı adı iki kez olamaz)
 DO $$

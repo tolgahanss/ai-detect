@@ -2,17 +2,17 @@
 Lemon Squeezy Webhook Router
 =============================
 Lemon Squeezy'den gelen abonelik webhook'larını işler ve kullanıcının
-token (kredi) bakiyesini günceller.
+token (kredi) bakiyesini + plan türünü günceller.
 
 Güvenlik:
   - HMAC-SHA256 imza doğrulaması (X-Signature header)
   - Sahte/replay isteklere karşı koruma
   - Yalnızca "order_created" ve "subscription_created" event'leri işlenir
 
-Paket → Token Eşleştirmesi:
-  - Starter      → +20 token
-  - Professional  → +200 token
-  - Enterprise    → 99999 token (sınırsız simge)
+Paket → Token + Plan Eşleştirmesi:
+  - Starter      → +20 token,  plan_type='starter'  (intihal taraması YOK)
+  - Professional  → +200 token, plan_type='professional' (intihal taraması VAR)
+  - Enterprise    → 99999 token, plan_type='enterprise'  (intihal taraması VAR)
 """
 
 import hmac
@@ -41,14 +41,21 @@ PLAN_TOKEN_MAP: dict[str, int] = {
     "enterprise": 99999,
 }
 
+# Plan adı → plan_type eşleştirmesi (veritabanına yazılacak değer)
+PLAN_TYPE_MAP: dict[str, str] = {
+    "starter": "starter",
+    "professional": "professional",
+    "enterprise": "enterprise",
+}
+
 # Lemon Squeezy tarafından belirlenmiş variant_id'lere göre de eşleşebilir
 # Kendi Lemon Squeezy Dashboard'undan variant_id'leri alıp buraya ekleyebilirsiniz
-# Örnek: VARIANT_ID_TOKEN_MAP = { 123456: 20, 789012: 200, 345678: 99999 }
-VARIANT_ID_TOKEN_MAP: dict[int, int] = {
+# Örnek: VARIANT_ID_TOKEN_MAP = { 123456: (20, "starter"), 789012: (200, "professional") }
+VARIANT_ID_TOKEN_MAP: dict[int, tuple[int, str]] = {
     # Lemon Squeezy'deki variant_id'lerinizi buraya ekleyin:
-    # 123456: 20,    # Starter
-    # 789012: 200,   # Professional
-    # 345678: 99999, # Enterprise
+    # 123456: (20, "starter"),
+    # 789012: (200, "professional"),
+    # 345678: (99999, "enterprise"),
 }
 
 # İşlenecek event türleri
@@ -106,10 +113,10 @@ def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> boo
 # ─────────────────────── Paket → Token Çözümleme ──────────────────
 
 
-def resolve_token_amount(payload_data: dict) -> Optional[int]:
+def resolve_plan_info(payload_data: dict) -> Optional[tuple[int, str]]:
     """
     Webhook payload'undan plan bilgisini çıkarır ve
-    uygun token miktarını döndürür.
+    (token_miktarı, plan_type) tuple'ı döndürür.
 
     Öncelik sırası:
       1. variant_id eşleşmesi (VARIANT_ID_TOKEN_MAP)
@@ -120,7 +127,7 @@ def resolve_token_amount(payload_data: dict) -> Optional[int]:
         payload_data: Lemon Squeezy webhook payload'unun "data" bölümü
 
     Returns:
-        Token miktarı veya None (tanınmayan plan)
+        (token_amount, plan_type) veya None (tanınmayan plan)
     """
     attributes = payload_data.get("attributes", {})
 
@@ -137,7 +144,7 @@ def resolve_token_amount(payload_data: dict) -> Optional[int]:
     if variant_name:
         plan_key = variant_name.strip().lower()
         if plan_key in PLAN_TOKEN_MAP:
-            return PLAN_TOKEN_MAP[plan_key]
+            return (PLAN_TOKEN_MAP[plan_key], PLAN_TYPE_MAP[plan_key])
 
     # 3. Ürün adı ile eşleştirme (fallback)
     product_name = (
@@ -148,7 +155,7 @@ def resolve_token_amount(payload_data: dict) -> Optional[int]:
         product_lower = product_name.strip().lower()
         for plan_key, tokens in PLAN_TOKEN_MAP.items():
             if plan_key in product_lower:
-                return tokens
+                return (tokens, PLAN_TYPE_MAP[plan_key])
 
     return None
 
@@ -285,11 +292,11 @@ async def handle_lemonsqueezy_webhook(request: Request):
 
     user = users[0]
 
-    # ── 7. Token Miktarını Çözümle ──
+    # ── 7. Token Miktarını ve Plan Türünü Çözümle ──
     data = payload.get("data", {})
-    token_amount = resolve_token_amount(data)
+    plan_info = resolve_plan_info(data)
 
-    if token_amount is None:
+    if plan_info is None:
         logger.warning(f"⚠️  Tanınmayan plan — payload data: {data.get('attributes', {}).get('variant_name', 'N/A')}")
         return JSONResponse(
             status_code=status.HTTP_200_OK,
@@ -299,7 +306,9 @@ async def handle_lemonsqueezy_webhook(request: Request):
             },
         )
 
-    # ── 8. Token Bakiyesini Güncelle ──
+    token_amount, plan_type = plan_info
+
+    # ── 8. Token Bakiyesini + Plan Türünü Güncelle ──
     current_credits = user.get("credit_count", 0) or 0
 
     if token_amount >= 99999:
@@ -312,19 +321,23 @@ async def handle_lemonsqueezy_webhook(request: Request):
     try:
         supabase.update(
             table="users",
-            data={"credit_count": new_credits},
+            data={
+                "credit_count": new_credits,
+                "plan_type": plan_type,
+            },
             filters={"id": user["id"]},
         )
     except Exception as e:
-        logger.error(f"❌ Token güncelleme hatası: {e}")
+        logger.error(f"❌ Token/plan güncelleme hatası: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Token güncelleme sırasında hata oluştu.",
         )
 
     logger.info(
-        f"✅ Token güncellendi: {customer_email} → "
-        f"{current_credits} → {new_credits} (+{token_amount})"
+        f"✅ Güncellendi: {customer_email} → "
+        f"credits: {current_credits}→{new_credits} (+{token_amount}), "
+        f"plan_type: {plan_type}"
     )
 
     return JSONResponse(
@@ -335,5 +348,6 @@ async def handle_lemonsqueezy_webhook(request: Request):
             "previous_credits": current_credits,
             "added_tokens": token_amount,
             "new_credits": new_credits,
+            "plan_type": plan_type,
         },
     )

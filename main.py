@@ -34,7 +34,7 @@ from slowapi.errors import RateLimitExceeded
 
 from auth.router import router as auth_router
 from auth.dependencies import get_current_user, get_current_user_optional
-from auth.utils import is_user_premium, can_user_access_full_report
+from auth.utils import is_user_premium, can_user_access_full_report, can_user_access_plagiarism
 from admin.router import router as admin_router
 from webhook.router import router as webhook_router
 from plagiarism import check_plagiarism
@@ -373,8 +373,15 @@ async def upload_file(
     extracted_text = _extract_text_from_file(saved_path, extension)
     analysis_result = _analyze_ai_content(extracted_text, can_see_full=can_see_full)
 
-    # ── 8. İntihal / Benzerlik Taraması (internetten) ──
-    plagiarism_result = await check_plagiarism(extracted_text, can_see_full=can_see_full)
+    # ── 8. İntihal / Benzerlik Taraması (plan kontrolü) ──
+    has_plagiarism_access = can_user_access_plagiarism(current_user)
+    if has_plagiarism_access:
+        plagiarism_result = await check_plagiarism(extracted_text, can_see_full=can_see_full)
+    else:
+        plagiarism_result = {
+            "restricted": True,
+            "message": "İntihal taraması için paketinizi Professional veya Enterprise'a yükseltin.",
+        }
 
     # ── 9. Kredi Düş (Premium kullanıcılar bypass) ──
     remaining_credits = None
@@ -456,8 +463,15 @@ async def analyze_text(
     # AI Analizi
     analysis_result = _analyze_ai_content(data.text, can_see_full=can_see_full)
 
-    # ── İntihal / Benzerlik Taraması (internetten) ──
-    plagiarism_result = await check_plagiarism(data.text, can_see_full=can_see_full)
+    # ── İntihal / Benzerlik Taraması (plan kontrolü) ──
+    has_plagiarism_access = can_user_access_plagiarism(current_user)
+    if has_plagiarism_access:
+        plagiarism_result = await check_plagiarism(data.text, can_see_full=can_see_full)
+    else:
+        plagiarism_result = {
+            "restricted": True,
+            "message": "İntihal taraması için paketinizi Professional veya Enterprise'a yükseltin.",
+        }
 
     # ── Kredi düş (Premium kullanıcılar bypass) ──
     remaining_credits = None

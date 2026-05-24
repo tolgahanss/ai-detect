@@ -78,6 +78,7 @@ class UserResponse(BaseModel):
     credit_count: int = 3
     is_premium: bool = False
     premium_until: Optional[str] = None
+    plan_type: str = "free"
     role: str = "user"
 
 

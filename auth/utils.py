@@ -63,3 +63,28 @@ def can_user_access_full_report(user: Optional[dict]) -> bool:
     # Kredisi olan kullanıcılar da sansürsüz görebilir
     credit_count = user.get("credit_count", 0)
     return credit_count > 0
+
+
+def can_user_access_plagiarism(user: Optional[dict]) -> bool:
+    """
+    Kullanıcının intihal (plagiarism) taraması yapıp yapamayacağını belirler.
+
+    İntihal taraması erişim kuralları:
+      - plan_type == 'professional' → True
+      - plan_type == 'enterprise'   → True
+      - plan_type == 'starter'      → False (sadece AI tespiti yapabilir)
+      - plan_type == 'free' / None  → False
+      - is_premium == True          → True (eski premium kullanıcılar için geriye uyumluluk)
+
+    Starter paket ($3.5) kullanıcıları yalnızca AI tespit özelliğine erişebilir.
+    Professional ($7.99) ve Enterprise ($15) kullanıcıları intihal taraması da yapabilir.
+    """
+    if user is None:
+        return False
+
+    # Eski premium kullanıcılar için geriye uyumluluk
+    if is_user_premium(user):
+        return True
+
+    plan_type = user.get("plan_type", "free") or "free"
+    return plan_type in ("professional", "enterprise")

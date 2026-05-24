@@ -161,6 +161,7 @@ async def register(request: Request, user_data: UserRegister):
             credit_count=new_user.get("credit_count", 3),
             is_premium=new_user.get("is_premium", False),
             premium_until=new_user.get("premium_until"),
+            plan_type=new_user.get("plan_type", "free"),
         ),
     )
 
@@ -231,6 +232,7 @@ async def login(request: Request, credentials: UserLogin):
             credit_count=user.get("credit_count", 3),
             is_premium=user.get("is_premium", False),
             premium_until=user.get("premium_until"),
+            plan_type=user.get("plan_type", "free"),
         ),
     )
 
@@ -262,6 +264,7 @@ async def get_me(
         credit_count=current_user.get("credit_count", 3),
         is_premium=current_user.get("is_premium", False),
         premium_until=current_user.get("premium_until"),
+        plan_type=current_user.get("plan_type", "free"),
     )
 
 
