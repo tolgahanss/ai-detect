@@ -258,6 +258,135 @@
         .trust-bar-item {
             animation: fadeIn 0.5s ease forwards;
         }
+
+        /* ── Premium Analysis Animation ── */
+        @keyframes orbitalSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes orbitalSpinReverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+        @keyframes particlePulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        @keyframes neonGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(79,70,229,0.15), 0 0 60px rgba(79,70,229,0.05); }
+            50% { box-shadow: 0 0 30px rgba(79,70,229,0.3), 0 0 80px rgba(79,70,229,0.1); }
+        }
+        @keyframes terminalBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        @keyframes slideInLog {
+            from { opacity: 0; transform: translateX(-8px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes checkBounce {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes rippleOut {
+            0% { transform: scale(0.5); opacity: 0.5; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        .orbital-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 1.5px solid transparent;
+        }
+        .orbital-ring-1 {
+            width: 120px; height: 120px;
+            border-top-color: rgba(79,70,229,0.5);
+            border-right-color: rgba(6,182,212,0.3);
+            animation: orbitalSpin 3s linear infinite;
+        }
+        .orbital-ring-2 {
+            width: 160px; height: 160px;
+            border-bottom-color: rgba(79,70,229,0.3);
+            border-left-color: rgba(6,182,212,0.2);
+            animation: orbitalSpinReverse 4s linear infinite;
+        }
+        .orbital-ring-3 {
+            width: 200px; height: 200px;
+            border-top-color: rgba(79,70,229,0.15);
+            border-right-color: rgba(6,182,212,0.1);
+            animation: orbitalSpin 6s linear infinite;
+        }
+        .orbital-particle {
+            position: absolute;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4F46E5, #06B6D4);
+            animation: particlePulse 2s ease-in-out infinite;
+        }
+        .analysis-glow-card {
+            animation: neonGlow 2.5s ease-in-out infinite;
+        }
+        .terminal-cursor {
+            display: inline-block;
+            width: 7px; height: 14px;
+            background: #4F46E5;
+            animation: terminalBlink 0.8s step-end infinite;
+            margin-left: 2px;
+            vertical-align: middle;
+        }
+        .log-line {
+            animation: slideInLog 0.3s ease forwards;
+        }
+        .stepper-line {
+            transition: background-color 0.5s ease;
+        }
+        .check-bounce {
+            animation: checkBounce 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        }
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(79,70,229,0.15);
+            animation: rippleOut 0.8s ease-out forwards;
+            pointer-events: none;
+        }
+
+        /* ── SPA Page Transitions ── */
+        .page-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .page-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .page-fade-in {
+            animation: fadeIn 0.4s ease forwards, slideUp 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+        }
+        .legal-content h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0F172A;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        .legal-content p, .legal-content li {
+            color: #64748B;
+            font-size: 0.9375rem;
+            line-height: 1.8;
+        }
+        .legal-content ul {
+            list-style: disc;
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+        }
     </style>
 </head>
 
@@ -344,8 +473,10 @@
 
     <!-- ──────────────── HERO SECTION ──────────────── -->
     <main class="flex-grow">
-        <section class="hero-gradient">
-            <div class="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
+        <!-- SPA PAGE: HOME -->
+        <div id="page-home" class="page-section active">
+            <section class="hero-gradient">
+                <div class="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
                 <div
                     class="inline-flex items-center gap-2 px-4 py-1.5 bg-brandLight border border-indigo-100 rounded-full text-sm text-brandPrimary font-medium mb-8 animate-float">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -460,33 +591,62 @@
                     </button>
                 </div>
 
-                <!-- ─── ANALYSIS PROGRESS OVERLAY ─── -->
-                <div id="analysisOverlay" class="hidden mt-8 p-6 bg-slate-50 border border-slate-100 rounded-xl relative overflow-hidden">
-                    <div class="flex flex-col gap-4">
-                        <div class="flex justify-between items-center text-sm font-semibold text-textDark">
-                            <span id="scanStatus">Reading text...</span>
-                            <span class="text-brandPrimary">Processing</span>
+                <!-- ─── PREMIUM ANALYSIS OVERLAY ─── -->
+                <div id="analysisOverlay" class="hidden mt-8 relative overflow-hidden rounded-2xl analysis-glow-card" style="background: linear-gradient(145deg, #1e1b4b, #312e81); border: 1px solid rgba(99, 102, 241, 0.3);">
+                    <!-- Particle Background Effect -->
+                    <div class="absolute inset-0 opacity-20">
+                        <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.4),transparent_60%)]"></div>
+                        <div class="absolute w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xNSkiLz48L3N2Zz4=')]"></div>
+                    </div>
+                    
+                    <div class="relative z-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 md:gap-8">
+                        <!-- Orbital Spinner Left Side -->
+                        <div class="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0 flex items-center justify-center">
+                            <div class="orbital-ring orbital-ring-1"></div>
+                            <div class="orbital-ring orbital-ring-2"></div>
+                            <div class="orbital-ring orbital-ring-3"></div>
+                            <!-- Logo in Center -->
+                            <div class="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-indigo-500 to-cyan-400 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.6)] z-10" id="analysisLogoBox">
+                                <svg id="analysisLogoIcon" class="w-7 h-7 md:w-8 md:h-8 text-white transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                            </div>
+                            <!-- Particles -->
+                            <div class="orbital-particle" style="top: 10%; left: 50%; animation-delay: 0s;"></div>
+                            <div class="orbital-particle" style="bottom: 20%; right: 10%; animation-delay: 0.5s;"></div>
+                            <div class="orbital-particle" style="top: 40%; left: 10%; animation-delay: 1s;"></div>
                         </div>
-                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                            <div id="scanProgress" class="bg-brandPrimary h-full rounded-full transition-all duration-300" style="width: 25%"></div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-                            <div id="step1" class="flex items-center gap-2 text-xs font-semibold text-gray-400">
-                                <span class="flex items-center justify-center w-5 h-5 rounded-full border border-current text-[10px]">&#9675;</span>
-                                Reading Text
+
+                        <!-- Info & Terminal Log Right Side -->
+                        <div class="flex-grow w-full">
+                            <div class="flex justify-between items-end mb-3">
+                                <div>
+                                    <h3 class="text-lg md:text-xl font-bold text-white mb-1">Neural Analysis in Progress</h3>
+                                    <div class="text-indigo-200 text-xs md:text-sm flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" id="analysisPulseDot"></div>
+                                        <span id="scanStatus">Connecting to DetectAI core...</span>
+                                    </div>
+                                </div>
+                                <div class="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-300" style="font-variant-numeric: tabular-nums;">
+                                    <span id="scanPercent">0</span>%
+                                </div>
                             </div>
-                            <div id="step2" class="flex items-center gap-2 text-xs font-semibold text-gray-400">
-                                <span class="flex items-center justify-center w-5 h-5 rounded-full border border-current text-[10px]">&#9675;</span>
-                                AI Models Check
+                            
+                            <!-- Premium Progress Bar -->
+                            <div class="w-full bg-gray-900/50 rounded-full h-2.5 md:h-3 mb-4 border border-indigo-500/20 overflow-hidden relative">
+                                <div id="scanProgress" class="h-full rounded-full bg-gradient-to-r from-indigo-500 via-cyan-400 to-indigo-400 relative transition-all duration-300 ease-out w-0">
+                                    <div class="absolute top-0 left-0 w-full h-full overflow-hidden">
+                                        <div class="w-[200%] h-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] animate-[scanLine_2s_linear_infinite]"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="step3" class="flex items-center gap-2 text-xs font-semibold text-gray-400">
-                                <span class="flex items-center justify-center w-5 h-5 rounded-full border border-current text-[10px]">&#9675;</span>
-                                Plagiarism Scan
-                            </div>
-                            <div id="step4" class="flex items-center gap-2 text-xs font-semibold text-gray-400">
-                                <span class="flex items-center justify-center w-5 h-5 rounded-full border border-current text-[10px]">&#9675;</span>
-                                Final Report
+
+                            <!-- Terminal Logs Window -->
+                            <div class="bg-black/40 rounded-lg p-3 border border-indigo-500/20 h-20 md:h-24 overflow-hidden relative font-mono text-[10px] md:text-xs">
+                                <div id="terminalLogContainer" class="flex flex-col gap-1.5 justify-end h-full">
+                                    <div class="text-indigo-300 opacity-50 log-line">> Initializing security protocols... [OK]</div>
+                                    <div class="text-cyan-300 log-line">> <span id="terminalActiveLine">Extracting text vectors</span><span class="terminal-cursor" id="terminalCursor"></span></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -717,7 +877,7 @@
         </section>
 
         <!-- ──────────────── FAQ SECTION ──────────────── -->
-        <section class="max-w-3xl mx-auto px-6 py-20 reveal-on-scroll">
+        <section id="faq-section" class="max-w-3xl mx-auto px-6 py-20 reveal-on-scroll">
             <h2 class="text-3xl font-bold text-center text-textDark mb-10">Frequently Asked Questions</h2>
             <div class="space-y-4">
                 <div class="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer faq-item"
@@ -803,6 +963,139 @@
                 </div>
             </div>
         </section>
+        </div> <!-- End of page-home -->
+
+        <!-- SPA PAGE: PRIVACY POLICY -->
+        <div id="page-privacy" class="page-section">
+            <div class="max-w-4xl mx-auto px-6 py-20 legal-content">
+                <button onclick="showPage('home')" class="mb-8 flex items-center gap-2 text-brandPrimary hover:text-brandHover font-medium transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Home
+                </button>
+                <h1 class="text-4xl font-extrabold text-textDark mb-4">Privacy Policy</h1>
+                <p class="text-sm text-textMuted mb-12">Last updated: May 2026</p>
+                
+                <h3>1. Introduction</h3>
+                <p>DetectAI respects your privacy and is committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website.</p>
+                
+                <h3>2. Data Security & Storage</h3>
+                <p>We do NOT store your uploaded texts or files. Once the analysis is complete, all user content is permanently deleted from our servers. We do not use your academic work to train any AI models.</p>
+                
+                <h3>3. Information We Collect</h3>
+                <ul>
+                    <li>Account information (Name, Email) upon registration</li>
+                    <li>Usage data (scan frequency, feature usage) to improve our service</li>
+                    <li>Payment information (processed securely via Stripe)</li>
+                </ul>
+                
+                <h3>4. Your Rights</h3>
+                <p>You have the right to request access, correction, or erasure of your personal data. Please contact us at privacy@detectai.example.com to exercise these rights.</p>
+            </div>
+        </div>
+
+        <!-- SPA PAGE: TERMS OF SERVICE -->
+        <div id="page-terms" class="page-section">
+            <div class="max-w-4xl mx-auto px-6 py-20 legal-content">
+                <button onclick="showPage('home')" class="mb-8 flex items-center gap-2 text-brandPrimary hover:text-brandHover font-medium transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Home
+                </button>
+                <h1 class="text-4xl font-extrabold text-textDark mb-4">Terms of Service</h1>
+                <p class="text-sm text-textMuted mb-12">Last updated: May 2026</p>
+                
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing and using DetectAI, you accept and agree to be bound by the terms and provision of this agreement.</p>
+                
+                <h3>2. Service Description</h3>
+                <p>DetectAI provides AI detection and plagiarism analysis tools. While we strive for 99.2% accuracy, our reports should be used as guidance, not absolute proof of academic misconduct.</p>
+                
+                <h3>3. User Obligations</h3>
+                <ul>
+                    <li>You must not use the service for any illegal or unauthorized purpose.</li>
+                    <li>You must not attempt to hack, destabilize, or adapt our API.</li>
+                    <li>You agree that the final decision regarding academic integrity lies with your institution.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SPA PAGE: COOKIE POLICY -->
+        <div id="page-cookies" class="page-section">
+            <div class="max-w-4xl mx-auto px-6 py-20 legal-content">
+                <button onclick="showPage('home')" class="mb-8 flex items-center gap-2 text-brandPrimary hover:text-brandHover font-medium transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Home
+                </button>
+                <h1 class="text-4xl font-extrabold text-textDark mb-4">Cookie Policy</h1>
+                <p class="text-sm text-textMuted mb-12">Last updated: May 2026</p>
+                
+                <h3>1. What are Cookies?</h3>
+                <p>Cookies are small text files that are stored on your computer or mobile device when you visit a website. They allow the website to remember your actions and preferences over a period of time.</p>
+                
+                <h3>2. How We Use Cookies</h3>
+                <ul>
+                    <li><strong>Essential Cookies:</strong> Required to keep you logged in securely (JWT tokens in localStorage).</li>
+                    <li><strong>Analytics:</strong> Used to understand how visitors interact with our website.</li>
+                </ul>
+                <p>We do NOT use third-party advertising cookies to track you across other websites.</p>
+            </div>
+        </div>
+
+        <!-- SPA PAGE: CONTACT -->
+        <div id="page-contact" class="page-section">
+            <div class="max-w-4xl mx-auto px-6 py-20">
+                <button onclick="showPage('home')" class="mb-8 flex items-center gap-2 text-brandPrimary hover:text-brandHover font-medium transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Home
+                </button>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                    <div>
+                        <h1 class="text-4xl font-extrabold text-textDark mb-4">Get in Touch</h1>
+                        <p class="text-textMuted mb-8 leading-relaxed">Have a question about our enterprise plans, API access, or need technical support? We're here to help.</p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-brandPrimary shadow-sm">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-textMuted font-medium">Email Support</p>
+                                    <a href="mailto:support@detectai.example.com" class="text-lg font-bold text-textDark hover:text-brandPrimary transition-colors">support@detectai.com</a>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-brandPrimary shadow-sm">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-textMuted font-medium">Enterprise Sales</p>
+                                    <p class="text-lg font-bold text-textDark">sales@detectai.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-8 rounded-2xl border border-gray-200 shadow-xl shadow-indigo-100/50">
+                        <form onsubmit="event.preventDefault(); alert('Message sent successfully! We will get back to you shortly.');" class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <input type="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                                <textarea required rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none transition-all resize-none"></textarea>
+                            </div>
+                            <button type="submit" class="w-full py-3.5 bg-brandPrimary text-white font-bold rounded-xl hover:bg-brandHover hover:shadow-lg transition-all">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </main>
 
@@ -842,17 +1135,17 @@
                         <li><a href="#" class="hover:text-brandPrimary transition-colors">Blog</a></li>
                         <li><a href="#" class="hover:text-brandPrimary transition-colors">Academic Integrity Guide</a></li>
                         <li><a href="#" class="hover:text-brandPrimary transition-colors">User Guide</a></li>
-                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Help Center (FAQ)</a></li>
+                        <li><a href="#faq" onclick="showPage('home'); setTimeout(() => document.getElementById('faq-section').scrollIntoView({behavior:'smooth'}), 100);" class="hover:text-brandPrimary transition-colors">Help Center (FAQ)</a></li>
                     </ul>
                 </div>
 
                 <div>
                     <h4 class="font-bold text-textDark mb-4">Legal</h4>
                     <ul class="space-y-3 text-sm text-textMuted">
-                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Cookie Policy</a></li>
-                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Contact</a></li>
+                        <li><a href="#privacy" onclick="showPage('privacy')" class="hover:text-brandPrimary transition-colors">Privacy Policy</a></li>
+                        <li><a href="#terms" onclick="showPage('terms')" class="hover:text-brandPrimary transition-colors">Terms of Service</a></li>
+                        <li><a href="#cookies" onclick="showPage('cookies')" class="hover:text-brandPrimary transition-colors">Cookie Policy</a></li>
+                        <li><a href="#contact" onclick="showPage('contact')" class="hover:text-brandPrimary transition-colors">Contact</a></li>
                     </ul>
                 </div>
             </div>
@@ -1133,7 +1426,26 @@
         let selectedFile = null;
         let currentUserData = null;
 
-        // ─── Helper ───
+        // ─── SPA Routing & Helper ───
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active', 'page-fade-in'));
+            const target = document.getElementById('page-' + pageId);
+            if (target) {
+                target.classList.add('active', 'page-fade-in');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (window.location.hash !== '#' + pageId) {
+                    history.pushState(null, null, '#' + pageId);
+                }
+            }
+        }
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', () => {
+            let hash = window.location.hash.substring(1);
+            if (!hash || hash === 'faq') hash = 'home';
+            showPage(hash);
+        });
+
         function isLoggedIn() {
             return !!localStorage.getItem('access_token');
         }
@@ -1384,23 +1696,41 @@
             refreshCreditUI();
         }
 
-        // ─── Analysis (with animation) ───
-        function showScanStep(stepNum, statusText) {
-            for (let i = 1; i <= 4; i++) {
-                const el = document.getElementById('step' + i);
-                if (i < stepNum) {
-                    el.className = 'flex items-center gap-2 step-done';
-                    el.querySelector('span').innerHTML = '&#10003;';
-                } else if (i === stepNum) {
-                    el.className = 'flex items-center gap-2 step-active';
-                    el.querySelector('span').innerHTML = '&#9679;';
-                } else {
-                    el.className = 'flex items-center gap-2 text-gray-400';
-                    el.querySelector('span').innerHTML = '&#9675;';
-                }
+        // ─── Premium Analysis Animation ───
+        function addTerminalLog(text) {
+            const container = document.getElementById('terminalLogContainer');
+            const activeLine = document.getElementById('terminalActiveLine');
+            if (activeLine) {
+                const oldText = activeLine.textContent;
+                const newLine = document.createElement('div');
+                newLine.className = 'text-indigo-300 opacity-50 log-line';
+                newLine.textContent = '> ' + oldText + ' [DONE]';
+                container.insertBefore(newLine, container.lastElementChild);
+                activeLine.textContent = text;
             }
-            document.getElementById('scanStatus').textContent = statusText;
-            document.getElementById('scanProgress').style.width = (stepNum * 25) + '%';
+        }
+
+        function updateProgress(targetPercent, duration) {
+            const display = document.getElementById('scanPercent');
+            const progress = document.getElementById('scanProgress');
+            let current = parseInt(display.textContent) || 0;
+            if (current >= targetPercent) return Promise.resolve();
+            
+            let startTime = null;
+            return new Promise(resolve => {
+                function step(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    const elapsed = timestamp - startTime;
+                    const p = Math.min(elapsed / duration, 1);
+                    const val = Math.floor(current + (targetPercent - current) * p);
+                    display.textContent = val;
+                    progress.style.width = val + '%';
+                    
+                    if (p < 1) window.requestAnimationFrame(step);
+                    else resolve();
+                }
+                window.requestAnimationFrame(step);
+            });
         }
 
         function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -1443,8 +1773,20 @@
             responseMsg.classList.add('hidden');
             overlay.classList.remove('hidden');
 
+            // Reset animation states
+            document.getElementById('scanPercent').textContent = '0';
+            document.getElementById('scanProgress').style.width = '0%';
+            document.getElementById('scanStatus').textContent = 'Connecting to DetectAI core...';
+            document.getElementById('terminalLogContainer').innerHTML = `
+                <div class="text-indigo-300 opacity-50 log-line">> Initializing security protocols... [OK]</div>
+                <div class="text-cyan-300 log-line">> <span id="terminalActiveLine">Extracting text vectors</span><span class="terminal-cursor"></span></div>
+            `;
+            const logoIcon = document.getElementById('analysisLogoIcon');
+            if(logoIcon) logoIcon.classList.add('animate-pulse');
+
             // Step 1: Reading text
-            showScanStep(1, 'Reading text...');
+            document.getElementById('scanStatus').textContent = 'Reading and parsing text...';
+            addTerminalLog("Loading sequence classifiers...");
             const totalDelay = 6000 + Math.random() * 3000; // 6-9 sn
             const stepDelay = totalDelay / 4;
 
@@ -1461,21 +1803,32 @@
                 });
             }
 
-            // Show steps sequentially
+            // Animate progress to 25%
+            updateProgress(25, stepDelay);
             await delay(stepDelay);
-            showScanStep(2, 'Running AI model...');
+            
+            document.getElementById('scanStatus').textContent = 'Running AI detection models...';
+            addTerminalLog("Analyzing semantic patterns...");
+            updateProgress(50, stepDelay);
             await delay(stepDelay);
-            showScanStep(3, 'Scanning for plagiarism on the internet...');
+            
+            document.getElementById('scanStatus').textContent = 'Scanning internet for plagiarism...';
+            addTerminalLog("Scanning 120M+ academic sources...");
+            updateProgress(75, stepDelay);
             await delay(stepDelay);
-            showScanStep(4, 'Preparing results...');
-
+            
+            document.getElementById('scanStatus').textContent = 'Preparing final report...';
+            addTerminalLog("Cross-referencing similarity scores...");
+            
             // Wait for API result
             const result = await resultPromise;
-            await delay(stepDelay);
-
-            // Completed
-            document.getElementById('scanProgress').style.width = '100%';
-            await delay(400);
+            
+            addTerminalLog("Finalizing probabilistic report...");
+            await updateProgress(100, 500);
+            
+            document.getElementById('scanStatus').textContent = 'Analysis Complete!';
+            if(logoIcon) logoIcon.classList.remove('animate-pulse');
+            await delay(500);
 
             // Close overlay, show results
             overlay.classList.add('hidden');
@@ -1610,7 +1963,7 @@
                                     <a href="${s.url}" target="_blank" rel="noopener" class="text-sm font-medium text-brandPrimary hover:underline truncate block">${s.title}</a>
                                     <span class="text-xs text-gray-400 truncate block">${s.url.substring(0, 60)}...</span>
                                 </div>
-                                <span class="text-xs font-bold text-orange-600 shrink-0">${s.match_count} matches</span>
+                                <span class="text-xs font-bold text-orange-600 shrink-0">${s.matches} matches</span>
                             </div>`;
                         }).join('');
                         sourcesHtml = `
