@@ -1,0 +1,12 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.12
+python-magic-bin==0.4.14
+slowapi==0.1.9
+httpx
+pydantic-settings
+PyJWT
+bcrypt
+python-dotenv
+email-validator
+fastapi-sso

@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DetectAI | Keep Your Thesis Truly Yours</title>
+
+    <!-- Google Fonts: Inter (Enterprise ve temiz bir görünüm için) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind Yapılandırması -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        bgLight: '#FFFFFF',
+                        bgSoft: '#F8FAFC',
+                        textDark: '#0F172A',
+                        textMuted: '#64748B',
+                        brandPrimary: '#4F46E5',
+                        brandHover: '#4338CA',
+                        brandLight: '#EEF2FF',
+                        accent: '#06B6D4',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 3px;
+        }
+
+        body {
+            background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 40%, #F1F5F9 100%);
+            color: #0F172A;
+            min-height: 100vh;
+        }
+
+        .modal-overlay {
+            backdrop-filter: blur(12px);
+            transition: opacity 0.3s ease;
+        }
+
+        .hero-gradient {
+            background: radial-gradient(ellipse at 50% -20%, rgba(79, 70, 229, 0.08) 0%, transparent 70%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(60px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 20px 6px rgba(79, 70, 229, 0.12);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .credit-bar-fill {
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes scanLine {
+            0% {
+                top: 0;
+            }
+
+            100% {
+                top: 100%;
+            }
+        }
+
+        @keyframes dotPulse {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .scan-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4F46E5, transparent);
+            animation: scanLine 2s ease-in-out infinite;
+        }
+
+        .dot-pulse span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4F46E5;
+            animation: dotPulse 1.4s infinite ease-in-out both;
+        }
+
+        .dot-pulse span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot-pulse span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .step-done {
+            color: #22c55e !important;
+        }
+
+        .step-active {
+            color: #4F46E5 !important;
+            font-weight: 600;
+        }
+
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal-on-scroll.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-answer.open {
+            max-height: 500px;
+        }
+
+        .faq-chevron {
+            transition: transform 0.3s ease;
+        }
+
+        .faq-chevron.rotated {
+            transform: rotate(180deg);
+        }
+
+        .model-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .model-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(79, 70, 229, 0.12);
+        }
+
+        .stat-number {
+            font-variant-numeric: tabular-nums;
+        }
+
+        @keyframes gradientFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .gradient-flow {
+            background-size: 200% 200%;
+            animation: gradientFlow 6s ease infinite;
+        }
+
+        .trust-bar-item {
+            animation: fadeIn 0.5s ease forwards;
+        }
+    </style>
+</head>
+
+<body class="antialiased flex flex-col min-h-screen">
+
+    <!-- ──────────────── NAVIGATION ──────────────── -->
+    <nav class="w-full bg-white/80 backdrop-blur-xl sticky top-0 z-40 border-b border-slate-100">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div
+                    class="w-8 h-8 bg-gradient-to-br from-brandPrimary to-accent rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                        </path>
+                    </svg>
+                </div>
+                <span class="font-bold text-xl tracking-tight text-textDark">Detect<span
+                        class="text-brandPrimary">AI</span></span>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Credit / PRO indicator (for logged-in users) -->
+                <div id="navCreditBadge"
+                    class="hidden flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-sm cursor-default">
+                    <svg class="w-4 h-4 text-brandPrimary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span id="creditText" class="font-semibold text-brandPrimary">0</span>
+                    <span id="creditLabel" class="text-gray-400 text-xs">Credits</span>
+                </div>
+                <div id="navAuthSection">
+                    <button onclick="toggleAuthView('login'); toggleModal('loginModal');"
+                        class="px-5 py-2 text-sm font-medium text-textDark border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Sign In</button>
+                </div>
+            </div>
+        </div>
+        <!-- Credit bar -->
+        <div class="w-full h-1 bg-gray-100">
+            <div id="creditBarFill" class="h-full bg-gradient-to-r from-brandPrimary to-blue-400 credit-bar-fill"
+                style="width:100%"></div>
+        </div>
+    </nav>
+
+    <!-- ──────────────── TRUST BAR ──────────────── -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-b border-white/5">
+        <div class="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm">
+            <div class="flex items-center gap-2 text-white/70 trust-bar-item">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                <span>Trusted by <strong class="text-white font-semibold">5,000+</strong> Academics</span>
+            </div>
+            <div class="w-px h-4 bg-white/20 hidden sm:block"></div>
+            <div class="flex items-center gap-2 text-white/70 trust-bar-item">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                    </path>
+                </svg>
+                <span>Used by <strong class="text-white font-semibold">120+</strong> Universities</span>
+            </div>
+            <div class="w-px h-4 bg-white/20 hidden sm:block"></div>
+            <div class="flex items-center gap-2 text-white/70 trust-bar-item">
+                <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                    </path>
+                </svg>
+                <span><strong class="text-white font-semibold">99.2%</strong> Accuracy Rate</span>
+            </div>
+            <div class="w-px h-4 bg-white/20 hidden sm:block"></div>
+            <div class="flex items-center gap-2 text-white/70 trust-bar-item">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Results in <strong class="text-white font-semibold">2 seconds</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ──────────────── HERO SECTION ──────────────── -->
+    <main class="flex-grow">
+        <section class="hero-gradient">
+            <div class="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
+                <div
+                    class="inline-flex items-center gap-2 px-4 py-1.5 bg-brandLight border border-indigo-100 rounded-full text-sm text-brandPrimary font-medium mb-8 animate-float">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Sign up and get 3 Free Analysis Credits
+                </div>
+                <h1
+                    class="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-textDark mb-6 leading-[1.1]">
+                    Is Your Text Truly<br><span
+                        class="bg-gradient-to-r from-brandPrimary to-accent bg-clip-text text-transparent">Your Own?</span>
+                </h1>
+                <p class="text-lg text-textMuted mb-10 max-w-xl mx-auto leading-relaxed">
+                    Detect AI-generated text in seconds. Ensure the originality of your academic work.
+                </p>
+                <button onclick="document.getElementById('analyzer-section').scrollIntoView({behavior:'smooth'})"
+                    class="px-8 py-4 bg-gradient-to-r from-brandPrimary to-indigo-500 text-white rounded-xl font-semibold text-lg hover:shadow-lg hover:shadow-indigo-200 transform hover:-translate-y-0.5 transition-all duration-300">
+                    Start Free Analysis
+                </button>
+                <div class="mt-10 flex flex-wrap justify-center gap-6 text-sm text-textMuted">
+                    <div class="flex items-center gap-1.5"><svg class="w-4 h-4 text-green-500" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg>Free registration</div>
+                    <div class="flex items-center gap-1.5"><svg class="w-4 h-4 text-green-500" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg>99.2% accuracy</div>
+                    <div class="flex items-center gap-1.5"><svg class="w-4 h-4 text-green-500" fill="currentColor"
+                            viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd"></path>
+                        </svg>PDF & DOCX support</div>
+                </div>
+            </div>
+                    <div class="mt-8 text-center">
+                <p class="text-sm text-textMuted"><strong class="text-textDark">Independent test results:</strong> 98.7% academic text accuracy · 0.8% false positive rate · 50+ languages supported</p>
+            </div>
+        </section>
+
+        <!-- ──────────────── ANALYSIS & TEXT INPUT SECTION ──────────────── -->
+        <section id="analyzer-section" class="max-w-4xl mx-auto px-6 py-12">
+            <div class="bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden p-6 md:p-8">
+                <!-- Tab headers / Selector -->
+                <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-6">
+                    <h2 class="text-xl font-bold text-textDark flex items-center gap-2">
+                        <svg class="w-5 h-5 text-brandPrimary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Text Analyzer
+                    </h2>
+                    
+                    <div class="flex gap-2">
+                        <button type="button" onclick="clearSelectedFile()" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-50 text-brandPrimary hover:bg-indigo-100 transition-colors flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Paste Text
+                        </button>
+                        
+                        <button type="button" onclick="document.getElementById('fileInput').click()" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 text-textMuted hover:bg-gray-50 hover:text-textDark transition-colors flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            Upload File
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hidden file input -->
+                <input type="file" id="fileInput" accept=".pdf,.docx" onchange="handleFileSelect(event)" class="hidden">
+
+                <!-- File upload feedback / name display -->
+                <div class="flex items-center justify-between gap-4 mb-4">
+                    <div id="fileNameDisplay" class="hidden px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg text-brandPrimary text-sm font-semibold"></div>
+                    <button id="clearFileBtn" type="button" onclick="clearSelectedFile()" class="hidden text-xs text-red-500 hover:text-red-700 font-semibold transition-colors">Clear File</button>
+                </div>
+
+                <!-- Textarea container -->
+                <div class="relative">
+                    <textarea id="textInput" oninput="updateCounters()" rows="8" placeholder="Paste your text here (up to 1,000 words)..." class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none resize-none transition-all placeholder:text-gray-300 text-textDark text-sm sm:text-base leading-relaxed"></textarea>
+                    <div class="scan-line hidden absolute left-0 w-full h-0.5 bg-brandPrimary opacity-40"></div>
+                </div>
+
+                <!-- Word count warnings and counters -->
+                <div id="wordCountWarning" class="hidden text-xs text-red-500 font-medium mt-2 flex items-center gap-1">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    Text exceeds the 1,000-word limit. Please shorten your text or upload a file for larger documents.
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4 text-xs sm:text-sm text-textMuted border-t border-gray-100 pt-4">
+                    <div class="flex items-center gap-4">
+                        <div><span id="wordCount" class="font-semibold text-textDark">0</span>/1,000 words</div>
+                        <div class="w-1 h-1 bg-gray-300 rounded-full"></div>
+                        <div><span id="charCount" class="font-semibold text-textDark">0</span> characters</div>
+                    </div>
+                    
+                    <button id="analyzeBtn" onclick="submitAnalysis()" class="w-full sm:w-auto px-6 py-3 bg-brandPrimary text-white font-semibold rounded-xl hover:bg-brandPrimary/90 hover:shadow-lg hover:shadow-indigo-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <svg id="loadingSpinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span id="analyzeBtnText">Start Analysis</span>
+                    </button>
+                </div>
+
+                <!-- ─── ANALYSIS PROGRESS OVERLAY ─── -->
+                <div id="analysisOverlay" class="hidden mt-8 p-6 bg-slate-50 border border-slate-100 rounded-xl relative overflow-hidden">
+                    <div class="flex flex-col gap-4">
+                        <div class="flex justify-between items-center text-sm font-semibold text-textDark">
+                            <span id="scanStatus">Reading text...</span>
+                            <span class="text-brandPrimary">Processing</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                            <div id="scanProgress" class="bg-brandPrimary h-full rounded-full transition-all duration-300" style="width: 25%"></div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                            <div id="step1" class="flex items-center gap-2 text-xs font-semibold text-gray-400">
+                                <span class="flex items-center justify-center w-5 h-5 rounded-full border border-current text-[10px]">&#9675;</span>
+                                Reading Text
+                            </div>
+                            <div id="step2" class="flex items-center gap-2 text-xs font-semibold text-gray-400">
+                                <span class="flex items-center justify-center w-5 h-5 rounded-full border border-current text-[10px]">&#9675;</span>
+                                AI Models Check
+                            </div>
+                            <div id="step3" class="flex items-center gap-2 text-xs font-semibold text-gray-400">
+                                <span class="flex items-center justify-center w-5 h-5 rounded-full border border-current text-[10px]">&#9675;</span>
+                                Plagiarism Scan
+                            </div>
+                            <div id="step4" class="flex items-center gap-2 text-xs font-semibold text-gray-400">
+                                <span class="flex items-center justify-center w-5 h-5 rounded-full border border-current text-[10px]">&#9675;</span>
+                                Final Report
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ─── ANALYSIS RESULTS BOX ─── -->
+                <div id="apiResponseMessage" class="hidden text-left"></div>
+            </div>
+        </section>
+
+        <!-- ──────────────── PRICING SECTION ──────────────── -->
+        <section class="max-w-6xl mx-auto px-6 py-20">
+            <h2 class="text-3xl font-bold text-center text-textDark mb-12">Plans Fit for Your Needs</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Plan 1 -->
+                <div
+                    class="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="text-xl font-semibold text-textDark mb-2">Basic</h3>
+                    <p class="text-textMuted text-sm mb-6">Ideal for students and individual use.</p>
+                    <div class="mb-6"><span class="text-4xl font-bold text-textDark">99 ₺</span> <span
+                            class="text-gray-500">/mo</span></div>
+                    <ul class="space-y-4 mb-8 text-sm text-textMuted">
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> 50 Scans per Month</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> PDF & DOCX Support</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> Basic Reporting</li>
+                    </ul>
+                    <button
+                        class="w-full py-3 border border-gray-300 rounded-lg text-textDark font-medium hover:bg-gray-50 transition-colors">Select</button>
+                </div>
+
+                <!-- Plan 2 (Vurgulu) -->
+                <div
+                    class="bg-textDark rounded-2xl border border-gray-800 p-8 shadow-2xl relative transform md:-translate-y-4">
+                    <div class="absolute top-0 right-8 transform -translate-y-1/2">
+                        <span
+                            class="bg-brandPrimary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Popular</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-white mb-2">Professional</h3>
+                    <p class="text-gray-400 text-sm mb-6">For academics and heavy usage.</p>
+                    <div class="mb-6"><span class="text-4xl font-bold text-white">299 ₺</span> <span
+                            class="text-gray-500">/mo</span></div>
+                    <ul class="space-y-4 mb-8 text-sm text-gray-300">
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brandPrimary" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> Unlimited Scans per Month</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brandPrimary" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> Detailed AI Analysis</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-brandPrimary" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> PDF Export</li>
+                    </ul>
+                    <button
+                        class="w-full py-3 bg-brandPrimary rounded-lg text-white font-medium hover:bg-brandHover transition-colors">Get Started</button>
+                </div>
+
+                <!-- Plan 3 -->
+                <div
+                    class="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-shadow duration-300">
+                    <h3 class="text-xl font-semibold text-textDark mb-2">Enterprise</h3>
+                    <p class="text-textMuted text-sm mb-6">For universities and institutions.</p>
+                    <div class="mb-6"><span class="text-4xl font-bold text-textDark">599 ₺</span> <span
+                            class="text-gray-500">/mo</span></div>
+                    <ul class="space-y-4 mb-8 text-sm text-textMuted">
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> API Access</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> Bulk File Scan</li>
+                        <li class="flex items-center gap-3"><svg class="w-5 h-5 text-green-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg> Dedicated Support Manager</li>
+                    </ul>
+                    <button
+                        class="w-full py-3 border border-gray-300 rounded-lg text-textDark font-medium hover:bg-gray-50 transition-colors">Contact Us</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ──────────────── TARGET AUDIENCE SECTION ──────────────── -->
+        <section class="bg-slate-900 py-20 text-white reveal-on-scroll">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold mb-4">Precise AI Detection for<br><span
+                            class="text-brandPrimary">Academic & Professional Content</span></h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-slate-800/50 border border-slate-700 p-8 rounded-2xl">
+                        <h3 class="text-xl font-bold mb-4 text-emerald-400">For Students</h3>
+                        <p class="text-sm text-slate-300 mb-6 leading-relaxed">Are you worried about your thesis or assignment being flagged as AI-written? Test it before you submit.</p>
+                        <ul class="space-y-3 text-sm text-slate-300">
+                            <li class="flex items-start gap-2"><svg class="w-5 h-5 text-emerald-500 shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg> See the risks before submitting</li>
+                            <li class="flex items-start gap-2"><svg class="w-5 h-5 text-emerald-500 shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg> Find out which sentences need revision</li>
+                            <li class="flex items-start gap-2"><svg class="w-5 h-5 text-emerald-500 shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg> Protect your academic integrity</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-800/50 border border-slate-700 p-8 rounded-2xl relative">
+                        <div
+                            class="absolute -top-3 right-6 bg-brandPrimary text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                            Popular</div>
+                        <h3 class="text-xl font-bold mb-4 text-brandPrimary">For Academics</h3>
+                        <p class="text-sm text-slate-300 mb-6 leading-relaxed">Analyze students' work in context, not just with a single score. Make evidence-based decisions with detailed reports.</p>
+                        <ul class="space-y-3 text-sm text-slate-300">
+                            <li class="flex items-start gap-2"><svg class="w-5 h-5 text-brandPrimary shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg> Scan texts in seconds</li>
+                            <li class="flex items-start gap-2"><svg class="w-5 h-5 text-brandPrimary shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg> Get evidence-based PDF reports at the sentence level</li>
+                            <li class="flex items-start gap-2"><svg class="w-5 h-5 text-brandPrimary shrink-0"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg> Verify the original academic voice</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-800/50 border border-slate-700 p-8 rounded-2xl">
+                        <h3 class="text-xl font-bold mb-4 text-blue-400">For Institutions</h3>
+                        <p class="text-sm text-slate-300 mb-6 leading-relaxed">Check your content before publishing; guarantee the "human" touch to your readers.</p>
+                        <ul class="space-y-3 text-sm text-slate-300">
+                            <li class="flex items-start gap-2"><svg class="w-5 h-5 text-blue-500 shrink-0" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg> Bulk scanning and API support</li>
+                            <li class="flex items-start gap-2"><svg class="w-5 h-5 text-blue-500 shrink-0" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg> Google SEO compatibility check</li>
+                            <li class="flex items-start gap-2"><svg class="w-5 h-5 text-blue-500 shrink-0" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7"></path>
+                                </svg> Custom branding solutions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ──────────────── STATISTICS SECTION ──────────────── -->
+        <section class="bg-brandPrimary text-white py-16 gradient-flow reveal-on-scroll">
+            <div
+                class="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/20">
+                <div>
+                    <div class="text-4xl md:text-5xl font-extrabold mb-2 stat-number">99.2%</div>
+                    <div class="text-sm text-indigo-100 font-medium uppercase tracking-wider">Detection Accuracy</div>
+                </div>
+                <div>
+                    <div class="text-4xl md:text-5xl font-extrabold mb-2 stat-number">1M+</div>
+                    <div class="text-sm text-indigo-100 font-medium uppercase tracking-wider">Successful Scans</div>
+                </div>
+                <div>
+                    <div class="text-4xl md:text-5xl font-extrabold mb-2 stat-number">120+</div>
+                    <div class="text-sm text-indigo-100 font-medium uppercase tracking-wider">Universities</div>
+                </div>
+                <button onclick="openCreditModal()"
+                    class="w-full py-3 bg-gradient-to-r from-gray-900 to-black text-white rounded-xl font-bold hover:shadow-lg transition-all focus:ring-4 focus:ring-gray-200">
+                    View Pricing Plans
+                </button>
+                <div>
+                    <div class="text-4xl md:text-5xl font-extrabold mb-2 stat-number">
+                        < 2sn</div>
+                            <div class="text-sm text-indigo-100 font-medium uppercase tracking-wider">Average Time
+                            </div>
+                    </div>
+                </div>
+        </section>
+
+        <!-- ──────────────── ACADEMIC INTEGRITY ──────────────── -->
+        <section class="bg-amber-50 py-16 border-y border-amber-100 reveal-on-scroll">
+            <div class="max-w-4xl mx-auto px-6 text-center">
+                <div
+                    class="w-16 h-16 mx-auto bg-amber-100 rounded-full flex items-center justify-center text-amber-600 mb-6">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m0-6l-9-5m9 5l9-5"></path>
+                    </svg>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-amber-900 mb-4">Academic Integrity Has Never Been This Easy</h2>
+                <p class="text-amber-800/80 leading-relaxed max-w-2xl mx-auto">DetectAI is dedicated to promoting and protecting academic integrity. Our tool is designed to help students create original work and assist academics in making unbiased evaluations.</p>
+            </div>
+        </section>
+
+        <!-- ──────────────── FAQ SECTION ──────────────── -->
+        <section class="max-w-3xl mx-auto px-6 py-20 reveal-on-scroll">
+            <h2 class="text-3xl font-bold text-center text-textDark mb-10">Frequently Asked Questions</h2>
+            <div class="space-y-4">
+                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer faq-item"
+                    onclick="toggleFaq(this)">
+                    <div class="px-6 py-4 flex items-center justify-between faq-question">
+                        <h4 class="font-bold text-textDark">What is an AI detector and how does it work?</h4>
+                        <svg class="w-5 h-5 text-gray-400 faq-chevron" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="px-6 faq-answer bg-gray-50">
+                        <div class="pb-4 text-sm text-textMuted leading-relaxed">An AI detector is a tool that predicts whether a text was written by a human or artificial intelligence (ChatGPT, Gemini, etc.). Our system generates results by analyzing text predictability, sentence rhythm, and grammatical patterns.</div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer faq-item"
+                    onclick="toggleFaq(this)">
+                    <div class="px-6 py-4 flex items-center justify-between faq-question">
+                        <h4 class="font-bold text-textDark">Which AI models can it detect?</h4>
+                        <svg class="w-5 h-5 text-gray-400 faq-chevron" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="px-6 faq-answer bg-gray-50">
+                        <div class="pb-4 text-sm text-textMuted leading-relaxed">DetectAI; GPT-4, GPT-5, Claude, Gemini,
+                            DetectAI can successfully detect GPT-4, GPT-5, Claude, Gemini, DeepSeek, Llama, and over 50 other AI models. It can also detect outputs from paraphrasing tools like Quillbot.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer faq-item"
+                    onclick="toggleFaq(this)">
+                    <div class="px-6 py-4 flex items-center justify-between faq-question">
+                        <h4 class="font-bold text-textDark">How accurate are the scan results?</h4>
+                        <svg class="w-5 h-5 text-gray-400 faq-chevron" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="px-6 faq-answer bg-gray-50">
+                        <div class="pb-4 text-sm text-textMuted leading-relaxed">Our accuracy rate in tests is at 99.2%. Especially in academic and scientific texts, the false positive rate (mistaking human writing for AI) is below 1%. However, no detector is 100% accurate, so reports should be used as an indicator.</div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer faq-item"
+                    onclick="toggleFaq(this)">
+                    <div class="px-6 py-4 flex items-center justify-between faq-question">
+                        <h4 class="font-bold text-textDark">Are my uploaded texts or files stored?</h4>
+                        <svg class="w-5 h-5 text-gray-400 faq-chevron" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                    <div class="px-6 faq-answer bg-gray-50">
+                        <div class="pb-4 text-sm text-textMuted leading-relaxed">Absolutely not. Your uploaded files and texts are permanently deleted from our servers immediately after the analysis is complete. Your texts are not used for AI training and are not shared with third parties.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ──────────────── CTA BANNER ──────────────── -->
+        <section class="max-w-5xl mx-auto px-6 pb-20 reveal-on-scroll">
+            <div
+                class="bg-gradient-to-r from-slate-900 via-indigo-900 to-brandPrimary rounded-3xl p-10 sm:p-14 text-center shadow-2xl relative overflow-hidden">
+                <div
+                    class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==')] opacity-50">
+                </div>
+                <div class="relative z-10">
+                    <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Verify the Originality of Your Work
+                    </h2>
+                    <p class="text-indigo-100 mb-8 max-w-xl mx-auto">Analyze your text for free right now and ensure that your writing is entirely yours.</p>
+                    <button onclick="document.getElementById('analyzer-section').scrollIntoView({behavior:'smooth'})"
+                        class="px-8 py-4 bg-white text-indigo-900 rounded-xl font-bold text-lg hover:bg-indigo-50 hover:shadow-xl hover:scale-105 transition-all duration-300">
+                        Start Free Scan
+                    </button>
+                    <p class="mt-4 text-sm text-indigo-200">No registration required • Daily free limit available</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ──────────────── FOOTER ──────────────── -->
+    <footer class="bg-white border-t border-gray-200 pt-16 pb-8 mt-auto">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+                <div class="md:col-span-1">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div
+                            class="w-8 h-8 bg-gradient-to-br from-brandPrimary to-accent rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                </path>
+                            </svg>
+                        </div>
+                        <span class="font-bold text-xl tracking-tight text-textDark">Detect<span
+                                class="text-brandPrimary">AI</span></span>
+                    </div>
+                    <p class="text-sm text-textMuted leading-relaxed mb-6">Turkey's most advanced Artificial Intelligence (AI) detection tool for your academic and professional texts.</p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-textDark mb-4">Product</h4>
+                    <ul class="space-y-3 text-sm text-textMuted">
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">AI Detector</a></li>
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Plagiarism Checker</a></li>
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">API Access</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-textDark mb-4">Resources</h4>
+                    <ul class="space-y-3 text-sm text-textMuted">
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Academic Integrity Guide</a></li>
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">User Guide</a></li>
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Help Center (FAQ)</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-textDark mb-4">Legal</h4>
+                    <ul class="space-y-3 text-sm text-textMuted">
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Cookie Policy</a></li>
+                        <li><a href="#" class="hover:text-brandPrimary transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-sm text-gray-500">&copy; 2026 DetectAI. All rights reserved.</div>
+                <div class="flex items-center gap-4">
+                    <a href="#" class="text-gray-400 hover:text-brandPrimary transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                        </svg>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-brandPrimary transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                        </svg>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-brandPrimary transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ──────────────── OUT OF CREDITS MODAL ──────────────── -->
+    <div id="creditModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/50 animate-fade-in" onclick="closeCreditModal()"></div>
+        <div class="relative flex items-center justify-center min-h-screen p-4 pointer-events-none">
+            <div
+                class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl pointer-events-auto animate-slide-up overflow-hidden">
+                <!-- Kapatma butonu -->
+                <button onclick="closeCreditModal()"
+                    class="absolute top-4 left-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 text-gray-600 hover:text-gray-900 transition-all backdrop-blur-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+
+                <div class="p-8 text-center border-b border-gray-100 bg-gradient-to-b from-blue-50/50 to-white">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-textDark mb-2">Out of Credits!</h3>
+                    <p class="text-textMuted">Choose a plan or upgrade your package to perform more analyses.</p>
+                </div>
+
+                <div class="p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Plan 1 -->
+                        <div
+                            class="border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-brandPrimary/30 transition-all duration-300 group">
+                            <h4 class="font-semibold text-textDark mb-1">Basic</h4>
+                            <div class="mb-3"><span class="text-2xl font-bold">99 ₺</span><span
+                                    class="text-gray-400 text-sm">/ay</span></div>
+                            <ul class="text-sm text-textMuted space-y-2 mb-4">
+                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>5,000 characters per day</li>
+                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>PDF and DOCX</li>
+                            </ul>
+                            <button onclick="handlePlanSelect('baslangic')"
+                                class="w-full py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 group-hover:border-brandPrimary group-hover:text-brandPrimary transition-colors">Select</button>
+                        </div>
+                        <!-- Plan 2 -->
+                        <div class="border-2 border-brandPrimary rounded-xl p-5 shadow-lg relative animate-pulse-glow">
+                            <span
+                                class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brandPrimary text-white text-xs font-bold px-3 py-1 rounded-full">POPULAR</span>
+                            <h4 class="font-semibold text-textDark mb-1">Professional</h4>
+                            <div class="mb-3"><span class="text-2xl font-bold">299 ₺</span><span
+                                    class="text-gray-400 text-sm">/ay</span></div>
+                            <ul class="text-sm text-textMuted space-y-2 mb-4">
+                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-brandPrimary" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>Unlimited characters</li>
+                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-brandPrimary" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>Detailed AI analysis</li>
+                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-brandPrimary" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>PDF report</li>
+                            </ul>
+                            <button onclick="handlePlanSelect('profesyonel')"
+                                class="w-full py-2 bg-brandPrimary text-white rounded-lg text-sm font-medium hover:bg-brandHover transition-colors">Get Started</button>
+                        </div>
+                        <!-- Plan 3 -->
+                        <div
+                            class="border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-brandPrimary/30 transition-all duration-300 group">
+                            <h4 class="font-semibold text-textDark mb-1">Enterprise</h4>
+                            <div class="mb-3"><span class="text-2xl font-bold">599 ₺</span><span
+                                    class="text-gray-400 text-sm">/ay</span></div>
+                            <ul class="text-sm text-textMuted space-y-2 mb-4">
+                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>Unlimited + API</li>
+                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>Bulk scanning</li>
+                                <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green-500" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7"></path>
+                                    </svg>Custom support</li>
+                            </ul>
+                            <button onclick="handlePlanSelect('kurumsal')"
+                                class="w-full py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 group-hover:border-brandPrimary group-hover:text-brandPrimary transition-colors">Contact Us</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ──────────────── SIGN IN MODAL ──────────────── -->
+    <div id="loginModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <!-- Arka plan overlay -->
+        <div class="absolute inset-0 bg-black/40 modal-overlay" onclick="toggleModal('loginModal')"></div>
+
+        <!-- Modal İçeriği -->
+        <div class="relative bg-white w-full max-w-md mx-4 rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up">
+            <button onclick="toggleModal('loginModal')"
+                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <div class="p-8">
+                <!-- LOGIN BÖLÜMÜ -->
+                <div id="loginView">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-textDark mb-2">Welcome Back</h3>
+                        <p class="text-sm text-textMuted">Sign in to continue</p>
+                    </div>
+
+                    <!-- Backend Email/Password Login Formu -->
+                    <form id="loginForm" onsubmit="handleLogin(event)" class="mb-6 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="loginEmail" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <input type="password" id="loginPassword" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none transition-all">
+                        </div>
+                        <div id="loginErrorMsg" class="text-red-500 text-sm font-medium hidden"></div>
+                        <button type="submit" id="loginSubmitBtn"
+                            class="w-full py-3 bg-textDark text-white rounded-lg font-medium hover:bg-black transition-colors flex justify-center items-center gap-2">
+                            <span>Sign In</span>
+                            <svg id="loginSpinner" class="animate-spin h-5 w-5 text-white hidden"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4">
+                                </circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </button>
+                    </form>
+
+                    <div class="relative flex items-center py-2 mb-6">
+                        <div class="flex-grow border-t border-gray-200"></div>
+                        <span class="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-wider">or</span>
+                        <div class="flex-grow border-t border-gray-200"></div>
+                    </div>
+
+                    <!-- Büyük Google Butonu -->
+                    <button type="button" onclick="window.location.href='http://127.0.0.1:8000/auth/google/login'"
+                        class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-lg text-textDark font-medium hover:bg-gray-50 transition-colors">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4"
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853"
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05"
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335"
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        </svg>
+                        Google ile Sign In
+                    </button>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-textMuted">Don't have an account? <button onclick="toggleAuthView('register')"
+                                class="text-brandPrimary font-medium hover:underline focus:outline-none">Sign Up for Free</button></p>
+                    </div>
+                </div>
+
+                <!-- REGISTER BÖLÜMÜ -->
+                <div id="registerView" class="hidden">
+                    <div class="text-center mb-8">
+                        <h3 class="text-2xl font-bold text-textDark mb-2">Create Account</h3>
+                        <p class="text-sm text-textMuted">Start using for free now</p>
+                    </div>
+
+                    <!-- Backend Register Formu -->
+                    <form id="registerForm" onsubmit="handleRegister(event)" class="mb-6 space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <input type="text" id="regFullName"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                            <input type="text" id="regUsername" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                            <input type="email" id="regEmail" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password * (En az 8
+                                karakter)</label>
+                            <input type="password" id="regPassword" required minlength="8"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brandPrimary/20 focus:border-brandPrimary outline-none transition-all">
+                        </div>
+                        <div id="regErrorMsg" class="text-red-500 text-sm font-medium hidden"></div>
+                        <button type="submit" id="regSubmitBtn"
+                            class="w-full py-3 bg-brandPrimary text-white rounded-lg font-medium hover:bg-brandHover transition-colors flex justify-center items-center gap-2">
+                            <span>Sign Up</span>
+                            <svg id="regSpinner" class="animate-spin h-5 w-5 text-white hidden"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4">
+                                </circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-textMuted">Already have an account? <button
+                                onclick="toggleAuthView('login')"
+                                class="text-brandPrimary font-medium hover:underline focus:outline-none">Sign In</button></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ──────────────── JAVASCRIPT & API ENTEGRASYONU ──────────────── -->
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+        let selectedFile = null;
+        let currentUserData = null;
+
+        // ─── Helper ───
+        function isLoggedIn() {
+            return !!localStorage.getItem('access_token');
+        }
+
+        function isUserPremium() {
+            if (!currentUserData) return false;
+            if (!currentUserData.is_premium) return false;
+            const pu = currentUserData.premium_until;
+            if (!pu) return true; // lifetime
+            try { return new Date(pu) > new Date(); } catch { return true; }
+        }
+
+        // ─── Navbar Credit / PRO Indicator ───
+        function refreshCreditUI() {
+            const badge = document.getElementById('navCreditBadge');
+            const creditText = document.getElementById('creditText');
+            const creditLabel = document.getElementById('creditLabel');
+            const bar = document.getElementById('creditBarFill');
+
+            if (!isLoggedIn() || !currentUserData) {
+                badge.classList.add('hidden');
+                if (bar) { bar.style.width = '0%'; }
+                return;
+            }
+
+            badge.classList.remove('hidden');
+
+            if (isUserPremium()) {
+                // PRO badge — parlayan efekt
+                badge.className = 'flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-300 rounded-full text-sm cursor-default animate-pulse-glow';
+                badge.innerHTML = `
+                    <svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    <span class="font-bold bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-transparent">PRO</span>`;
+                if (bar) { bar.style.width = '100%'; bar.className = 'h-full bg-gradient-to-r from-amber-400 to-yellow-400 credit-bar-fill'; }
+            } else {
+                const credits = currentUserData.credit_count || 0;
+                badge.className = 'flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-sm cursor-default';
+                badge.innerHTML = `
+                    <svg class="w-4 h-4 ${credits > 0 ? 'text-brandPrimary' : 'text-red-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span class="font-semibold ${credits > 0 ? 'text-brandPrimary' : 'text-red-500'}">${credits}</span>
+                    <span class="text-gray-400 text-xs">Credits</span>`;
+                if (bar) {
+                    const pct = Math.min(100, Math.round((credits / 10) * 100));
+                    bar.style.width = pct + '%';
+                    if (credits <= 0) bar.className = 'h-full bg-gradient-to-r from-red-500 to-red-400 credit-bar-fill';
+                    else if (credits <= 2) bar.className = 'h-full bg-gradient-to-r from-yellow-500 to-yellow-400 credit-bar-fill';
+                    else bar.className = 'h-full bg-gradient-to-r from-brandPrimary to-blue-400 credit-bar-fill';
+                }
+            }
+        }
+
+        // Out of credits modal
+        function openCreditModal() {
+            document.getElementById('creditModal').classList.remove('hidden');
+        }
+        function closeCreditModal() {
+            document.getElementById('creditModal').classList.add('hidden');
+        }
+
+        function handlePlanSelect(planName) {
+            closeCreditModal();
+            if (!isLoggedIn()) {
+                toggleAuthView('register');
+                toggleModal('loginModal');
+            } else {
+                alert(`"${planName}" plan selected. Payment integration will be active soon!`);
+            }
+        }
+
+        // ─── Modal & Auth ───
+        function toggleModal(modalID) {
+            const modal = document.getElementById(modalID);
+            modal.classList.contains('hidden') ? modal.classList.remove('hidden') : modal.classList.add('hidden');
+        }
+
+        function toggleAuthView(view) {
+            const loginView = document.getElementById('loginView');
+            const registerView = document.getElementById('registerView');
+            if (view === 'login') { loginView.classList.remove('hidden'); registerView.classList.add('hidden'); }
+            else { loginView.classList.add('hidden'); registerView.classList.remove('hidden'); }
+        }
+
+        // ─── Word / Character Counter ───
+        function updateCounters() {
+            const text = document.getElementById('textInput').value;
+            const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+            document.getElementById('charCount').textContent = text.length;
+            document.getElementById('wordCount').textContent = words.length;
+            const textarea = document.getElementById('textInput');
+            const warningMsg = document.getElementById('wordCountWarning');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            if (words.length > 1000) {
+                textarea.classList.add('border-red-500'); warningMsg.classList.remove('hidden');
+                analyzeBtn.disabled = true; analyzeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                textarea.classList.remove('border-red-500'); warningMsg.classList.add('hidden');
+                analyzeBtn.disabled = false; analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // ─── Dosya Seçimi ───
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileNameDisplay').textContent = file.name;
+                document.getElementById('fileNameDisplay').classList.remove('hidden');
+                const clearBtn = document.getElementById('clearFileBtn');
+                if (clearBtn) clearBtn.classList.remove('hidden');
+                document.getElementById('textInput').value = '';
+                document.getElementById('textInput').disabled = true;
+                document.getElementById('textInput').placeholder = 'File selected. Only the file will be analyzed.';
+                updateCounters();
+            }
+        }
+
+        function clearSelectedFile() {
+            selectedFile = null;
+            const textInput = document.getElementById('textInput');
+            textInput.disabled = false;
+            textInput.value = '';
+            textInput.placeholder = 'Paste your text here (up to 1,000 words)...';
+            document.getElementById('fileNameDisplay').classList.add('hidden');
+            document.getElementById('fileNameDisplay').textContent = '';
+            const clearBtn = document.getElementById('clearFileBtn');
+            if (clearBtn) clearBtn.classList.add('hidden');
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) fileInput.value = '';
+            updateCounters();
+        }
+
+        // ─── API Request ───
+        async function fetchAPI(endpoint, options = {}) {
+            const token = localStorage.getItem('access_token');
+            const headers = { ...options.headers };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+                const data = await response.json().catch(() => ({}));
+                return { ok: response.ok, status: response.status, data };
+            } catch (error) {
+                return { ok: false, status: 500, data: { detail: "Could not connect to the server." } };
+            }
+        }
+
+        // ─── Sign In ───
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorMsg = document.getElementById('loginErrorMsg');
+            const btnText = document.querySelector('#loginSubmitBtn span');
+            const spinner = document.getElementById('loginSpinner');
+            errorMsg.classList.add('hidden');
+            btnText.textContent = 'Signing In...'; spinner.classList.remove('hidden');
+            document.getElementById('loginSubmitBtn').disabled = true;
+
+            const response = await fetchAPI('/auth/login', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            spinner.classList.add('hidden'); btnText.textContent = 'Sign In';
+            document.getElementById('loginSubmitBtn').disabled = false;
+
+            if (response.ok) {
+                localStorage.setItem('access_token', response.data.access_token);
+                currentUserData = response.data.user;
+                toggleModal('loginModal');
+                await updateUIForAuth();
+                showMessage(`Welcome, ${response.data.user.username}! (${response.data.user.credit_count} Credits)`, "success");
+            } else {
+                let e = response.data.detail || "Sign in failed.";
+                if (Array.isArray(e)) e = e.map(x => x.msg).join('<br>');
+                errorMsg.innerHTML = typeof e === 'object' ? JSON.stringify(e) : e;
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        // ─── Sign Up ───
+        async function handleRegister(event) {
+            event.preventDefault();
+            const email = document.getElementById('regEmail').value;
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const errorMsg = document.getElementById('regErrorMsg');
+            const btnText = document.querySelector('#regSubmitBtn span');
+            const spinner = document.getElementById('regSpinner');
+            errorMsg.classList.add('hidden');
+            btnText.textContent = 'Sign Upunuyor...'; spinner.classList.remove('hidden');
+            document.getElementById('regSubmitBtn').disabled = true;
+
+            const payload = { email, username, password };
+            const fn = document.getElementById('regFullName').value;
+            if (fn) payload.full_name = fn;
+
+            const response = await fetchAPI('/auth/register', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            spinner.classList.add('hidden'); btnText.textContent = 'Sign Up';
+            document.getElementById('regSubmitBtn').disabled = false;
+
+            if (response.ok) {
+                localStorage.setItem('access_token', response.data.access_token);
+                currentUserData = response.data.user;
+                toggleModal('loginModal');
+                await updateUIForAuth();
+                showMessage(`Account created, welcome ${response.data.user.username}! (+3 Free Credits)`, "success");
+            } else {
+                let e = response.data.detail || "Sign up failed.";
+                if (Array.isArray(e)) e = e.map(x => x.msg).join('<br>');
+                errorMsg.innerHTML = typeof e === 'object' ? JSON.stringify(e) : e;
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        // ─── Log Out & UI ───
+        function logout() {
+            localStorage.removeItem('access_token');
+            currentUserData = null;
+            updateUIForAuth();
+            showMessage("Logged out successfully.", "success");
+        }
+
+        async function updateUIForAuth() {
+            const token = localStorage.getItem('access_token');
+            const navAuth = document.getElementById('navAuthSection');
+
+            if (token) {
+                const profileRes = await fetchAPI('/auth/me');
+                if (profileRes.ok) {
+                    currentUserData = profileRes.data;
+                    const username = currentUserData.username || 'User';
+                    navAuth.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-medium text-textMuted hidden sm:inline">${username}</span>
+                            <button onclick="logout()" class="px-4 py-1.5 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">Log Out</button>
+                        </div>`;
+                } else {
+                    localStorage.removeItem('access_token');
+                    currentUserData = null;
+                    navAuth.innerHTML = `<button onclick="toggleAuthView('login'); toggleModal('loginModal');" class="px-5 py-2 text-sm font-medium text-textDark border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Sign In</button>`;
+                }
+            } else {
+                currentUserData = null;
+                navAuth.innerHTML = `<button onclick="toggleAuthView('login'); toggleModal('loginModal');" class="px-5 py-2 text-sm font-medium text-textDark border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Sign In</button>`;
+            }
+            refreshCreditUI();
+        }
+
+        // ─── Analysis (with animation) ───
+        function showScanStep(stepNum, statusText) {
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById('step' + i);
+                if (i < stepNum) {
+                    el.className = 'flex items-center gap-2 step-done';
+                    el.querySelector('span').innerHTML = '&#10003;';
+                } else if (i === stepNum) {
+                    el.className = 'flex items-center gap-2 step-active';
+                    el.querySelector('span').innerHTML = '&#9679;';
+                } else {
+                    el.className = 'flex items-center gap-2 text-gray-400';
+                    el.querySelector('span').innerHTML = '&#9675;';
+                }
+            }
+            document.getElementById('scanStatus').textContent = statusText;
+            document.getElementById('scanProgress').style.width = (stepNum * 25) + '%';
+        }
+
+        function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+        async function submitAnalysis() {
+            const textInput = document.getElementById('textInput').value.trim();
+            const btnText = document.getElementById('analyzeBtnText');
+            const spinner = document.getElementById('loadingSpinner');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const overlay = document.getElementById('analysisOverlay');
+            const responseMsg = document.getElementById('apiResponseMessage');
+
+            if (!selectedFile && textInput.length === 0) {
+                showMessage("Please enter text or select a file to analyze.", "error");
+                return;
+            }
+
+            // ─── Cyber Shield: Login Required ───
+            if (!isLoggedIn()) {
+                // Guest user not signed in -> open loginModal, show sign up screen
+                toggleAuthView('register');
+                toggleModal('loginModal');
+                showMessage("Please sign up to perform free analysis (+3 Free Credits)", "error");
+                return;
+            }
+
+            // ─── Cyber Shield: Credit and Premium Check ───
+            if (!isUserPremium()) {
+                const credits = (currentUserData && currentUserData.credit_count) !== undefined ? currentUserData.credit_count : 0;
+                if (credits <= 0) {
+                    openCreditModal();
+                    return;
+                }
+            }
+
+            // Prepare UI
+            analyzeBtn.disabled = true;
+            btnText.textContent = 'Analyzing...';
+            spinner.classList.remove('hidden');
+            responseMsg.classList.add('hidden');
+            overlay.classList.remove('hidden');
+
+            // Step 1: Reading text
+            showScanStep(1, 'Reading text...');
+            const totalDelay = 6000 + Math.random() * 3000; // 6-9 sn
+            const stepDelay = totalDelay / 4;
+
+            // Start API call in parallel
+            let resultPromise;
+            if (selectedFile) {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                resultPromise = fetchAPI('/upload', { method: 'POST', body: formData });
+            } else {
+                resultPromise = fetchAPI('/analyze-text', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: textInput })
+                });
+            }
+
+            // Show steps sequentially
+            await delay(stepDelay);
+            showScanStep(2, 'Running AI model...');
+            await delay(stepDelay);
+            showScanStep(3, 'Scanning for plagiarism on the internet...');
+            await delay(stepDelay);
+            showScanStep(4, 'Preparing results...');
+
+            // Wait for API result
+            const result = await resultPromise;
+            await delay(stepDelay);
+
+            // Completed
+            document.getElementById('scanProgress').style.width = '100%';
+            await delay(400);
+
+            // Close overlay, show results
+            overlay.classList.add('hidden');
+            analyzeBtn.disabled = false;
+            btnText.textContent = 'Start Analysis';
+            spinner.classList.add('hidden');
+
+            if (result.ok) {
+                // Update the credits from the backend
+                if (result.data.remaining_credits !== undefined && result.data.remaining_credits !== null) {
+                    if (currentUserData && result.data.remaining_credits >= 0) {
+                        currentUserData.credit_count = result.data.remaining_credits;
+                    }
+                    // remaining_credits == -1 means premium (unlimited)
+                }
+                refreshCreditUI();
+                showMessage(result.data.message || "Analysis complete!", "success", result.data);
+            } else {
+                let detail = result.data?.detail;
+                let isCreditError = false;
+                if (typeof detail === 'string' && (detail.includes('Analiz hakkı') || detail.includes('paket') || detail.includes('credit') || detail.includes('package') || detail.includes('Credit'))) isCreditError = true;
+
+                if (result.status === 401) {
+                    // Token invalid/expired -> log out, open login
+                    localStorage.removeItem('access_token');
+                    currentUserData = null;
+                    refreshCreditUI();
+                    toggleAuthView('login');
+                    toggleModal('loginModal');
+                    showMessage("Your session has expired. Please log in again.", "error");
+                } else if (result.status === 403 && isCreditError) {
+                    openCreditModal();
+                } else {
+                    let errorTxt = detail || "An error occurred.";
+                    if (Array.isArray(errorTxt)) errorTxt = errorTxt.map(x => x.msg).join(' ');
+                    else if (typeof errorTxt === 'object') errorTxt = JSON.stringify(errorTxt);
+                    showMessage(`Error: ${errorTxt}`, "error");
+                }
+            }
+        }
+
+
+        // ─── Result Display ───
+        function showMessage(text, type, data = null) {
+            const box = document.getElementById('apiResponseMessage');
+            box.classList.remove('hidden');
+
+            if (data && data.analysis) {
+                const ai = data.analysis.ai, human = data.analysis.human;
+                const isPrem = isUserPremium();
+                const remCredits = data.remaining_credits;
+                const creditDisplay = isPrem || remCredits === -1
+                    ? '<span class="font-bold text-amber-500">∞ PRO</span>'
+                    : `<span class="font-semibold ${remCredits > 0 ? 'text-brandPrimary' : 'text-red-500'}">${remCredits ?? '?'}</span> <span class="text-gray-400">Credits</span>`;
+                let badge = '';
+                if (ai < 20) badge = '<span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded-full">High Originality</span>';
+                else if (ai < 50) badge = '<span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Attention Required</span>';
+                else badge = '<span class="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-0.5 rounded-full">AI Detected</span>';
+
+                let sentencesHtml = '';
+                if (data.analysis.sentence_reports && data.analysis.sentence_reports.length > 0) {
+                    const reports = data.analysis.sentence_reports;
+                    const isBlurred = data.analysis.is_blurred;
+
+                    let contentHtml = reports.map(r => {
+                        const isAi = r.ai_score > 50;
+                        const bgClass = isAi ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200';
+                        const blurClass = r.is_masked ? 'blur-md select-none opacity-40' : '';
+                        return `<span class="inline-block px-1.5 py-0.5 rounded border border-transparent hover:border-gray-300 transition-colors mr-1 mb-1 ${bgClass} ${blurClass}" title="AI Probability: ${r.ai_score}%">${r.text}</span>`;
+                    }).join('');
+
+                    let paywallHtml = '';
+                    if (isBlurred) {
+                        paywallHtml = `
+                        <div class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/30 backdrop-blur-[4px] rounded-xl border border-gray-100/50">
+                            <div class="bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-2xl max-w-sm text-center border border-brandPrimary/20 transform transition-all hover:scale-105">
+                                <div class="w-14 h-14 bg-gradient-to-tr from-brandPrimary to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                </div>
+                                <h4 class="text-xl font-bold text-textDark mb-2">View Full Report</h4>
+                                <p class="text-sm text-textMuted mb-6 leading-relaxed">Sign up and upgrade your package to access the detailed sentence-level report.</p>
+                                <button onclick="openCreditModal()" class="w-full py-3 bg-gradient-to-r from-gray-900 to-black text-white rounded-xl font-bold hover:shadow-lg transition-all focus:ring-4 focus:ring-gray-200">
+                                    View Pricing Plans
+                                </button>
+                            </div>
+                        </div>`;
+                    }
+
+                    sentencesHtml = `
+                    <div class="mt-8 border-t border-gray-100 pt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-md font-bold text-textDark">Detailed Sentence Analysis</h4>
+                            <span class="text-xs font-medium px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full">AI detection is color-coded</span>
+                        </div>
+                        <div class="relative rounded-xl p-5 bg-white border border-gray-200 text-[15px] leading-loose shadow-inner min-h-[150px] max-h-96 overflow-y-auto">
+                            ${contentHtml}
+                            ${paywallHtml}
+                        </div>
+                    </div>`;
+                }
+
+                // ─── Plagiarism / Similarity Scan UI ───
+                let plagiarismHtml = '';
+                if (data.plagiarism) {
+                    const plag = data.plagiarism;
+                    const simPct = Math.round(plag.overall_similarity);
+                    const isFlagged = plag.is_flagged;
+                    const plagBlurred = plag.is_blurred;
+
+                    // Similarity rengi
+                    let simColor = 'text-green-600';
+                    let simBg = 'bg-green-500';
+                    let simBadge = '<span class="bg-green-100 text-green-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Original Content</span>';
+                    if (simPct >= 50) {
+                        simColor = 'text-red-600'; simBg = 'bg-red-500';
+                        simBadge = '<span class="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-0.5 rounded-full animate-pulse">High Similarity!</span>';
+                    } else if (simPct >= 20) {
+                        simColor = 'text-orange-600'; simBg = 'bg-orange-500';
+                        simBadge = '<span class="bg-orange-100 text-orange-800 text-xs font-bold px-2.5 py-0.5 rounded-full">⚠ Warning: Similarity Detected</span>';
+                    }
+
+                    // Source listesi
+                    let sourcesHtml = '';
+                    if (plag.sources && plag.sources.length > 0) {
+                        const sourceItems = plag.sources.map((s, idx) => {
+                            if (s.url.includes('█')) {
+                                return `<div class="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg blur-sm select-none"><span class="text-sm text-gray-400">████████████</span></div>`;
+                            }
+                            return `<div class="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-xs font-bold shrink-0">${idx + 1}</span>
+                                <div class="min-w-0 flex-1">
+                                    <a href="${s.url}" target="_blank" rel="noopener" class="text-sm font-medium text-brandPrimary hover:underline truncate block">${s.title}</a>
+                                    <span class="text-xs text-gray-400 truncate block">${s.url.substring(0, 60)}...</span>
+                                </div>
+                                <span class="text-xs font-bold text-orange-600 shrink-0">${s.match_count} matches</span>
+                            </div>`;
+                        }).join('');
+                        sourcesHtml = `
+                        <div class="mt-4">
+                            <h5 class="text-sm font-bold text-textDark mb-2">Matching Sources</h5>
+                            <div class="space-y-2 max-h-48 overflow-y-auto">${sourceItems}</div>
+                        </div>`;
+                    }
+
+                    // Sentence-based similarity report
+                    let plagSentencesHtml = '';
+                    if (plag.sentence_reports && plag.sentence_reports.length > 0) {
+                        const plagContent = plag.sentence_reports.map(r => {
+                            const isSimilar = r.similarity > 20;
+                            const bgCls = r.is_masked
+                                ? 'bg-gray-100 text-gray-400 blur-md select-none opacity-40'
+                                : isSimilar
+                                    ? 'bg-orange-50 text-orange-800 border-orange-200'
+                                    : 'bg-green-50 text-green-700 border-green-200';
+                            const tooltip = r.matched_source ? `Source: ${r.matched_source} (%${Math.round(r.similarity)})` : `Similarity: %${Math.round(r.similarity)}`;
+                            return `<span class="inline-block px-1.5 py-0.5 rounded border border-transparent hover:border-gray-300 transition-colors mr-1 mb-1 ${bgCls}" title="${tooltip}">${r.text}</span>`;
+                        }).join('');
+
+                        let plagPaywall = '';
+                        if (plagBlurred) {
+                            plagPaywall = `
+                            <div class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/30 backdrop-blur-[4px] rounded-xl">
+                                <div class="bg-white/95 backdrop-blur-md p-6 rounded-2xl shadow-2xl max-w-sm text-center border border-orange-200 transform transition-all hover:scale-105">
+                                    <div class="w-14 h-14 bg-gradient-to-tr from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
+                                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    </div>
+                                    <h4 class="text-xl font-bold text-textDark mb-2">Full Plagiarism Report</h4>
+                                    <p class="text-sm text-textMuted mb-6 leading-relaxed">Upgrade to a premium package to see which sentences match which sources.</p>
+                                    <button onclick="openCreditModal()" class="w-full py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl font-bold hover:shadow-lg transition-all focus:ring-4 focus:ring-orange-200">
+                                        View Pricing Plans
+                                    </button>
+                                </div>
+                            </div>`;
+                        }
+
+                        plagSentencesHtml = `
+                        <div class="mt-4">
+                            <h5 class="text-sm font-bold text-textDark mb-2">Sentence-Based Similarity</h5>
+                            <div class="relative rounded-xl p-4 bg-white border border-gray-200 text-[14px] leading-loose shadow-inner min-h-[120px] max-h-80 overflow-y-auto">
+                                ${plagContent}
+                                ${plagPaywall}
+                            </div>
+                        </div>`;
+                    }
+
+                    // Warning banner (>20%)
+                    let warningBanner = '';
+                    if (isFlagged) {
+                        warningBanner = `
+                        <div class="mt-4 p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl flex items-start gap-3">
+                            <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-orange-800 text-sm">⚠ Similarity Warning</h5>
+                                <p class="text-xs text-orange-700 mt-1"><strong>${simPct}%</strong> of this text matches online content. It is recommended to keep this score below 20% for academic work.</p>
+                            </div>
+                        </div>`;
+                    }
+
+                    plagiarismHtml = `
+                    <div class="mt-8 border-t border-gray-100 pt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-md font-bold text-textDark flex items-center gap-2">
+                                <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                Plagiarism / Similarity Scan
+                            </h4>
+                            ${simBadge}
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm font-medium mb-1">
+                                <span class="${simColor}">Plagiarism Score</span>
+                                <span class="${simColor} font-bold">%${simPct}</span>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-3">
+                                <div class="${simBg} h-3 rounded-full transition-all duration-700" style="width: ${Math.min(simPct, 100)}%"></div>
+                            </div>
+                        </div>
+                        ${warningBanner}
+                        ${plagSentencesHtml}
+                        ${sourcesHtml}
+                    </div>`;
+                }
+
+                box.innerHTML = `
+                    <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mt-4">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-textDark">Analysis Result</h3>
+                            ${badge}
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm font-medium mb-1">
+                                    <span class="text-green-600">Human Written</span>
+                                    <span class="text-green-600">%${human}</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                                    <div class="bg-green-500 h-2.5 rounded-full" style="width: ${human}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm font-medium mb-1">
+                                    <span class="text-red-500">AI Generated</span>
+                                    <span class="text-red-500">%${ai}</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-2.5">
+                                    <div class="bg-red-400 h-2.5 rounded-full" style="width: ${ai}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex flex-wrap gap-4 text-sm text-gray-500 border-t border-gray-100 pt-4">
+                            <div><span class="font-medium text-textDark">${data.analysis.words}</span> Words</div>
+                            <div><span class="font-medium text-textDark">${data.analysis.sentences}</span> Sentences</div>
+                            <div class="ml-auto flex items-center gap-1">
+                                <svg class="w-4 h-4 text-brandPrimary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                ${creditDisplay}
+                            </div>
+                        </div>
+                        ${sentencesHtml}
+                        ${plagiarismHtml}
+                    </div>`;
+                box.className = "mt-4 block";
+            } else {
+                box.textContent = text;
+                box.className = `mt-4 text-sm font-medium p-3 rounded-lg block ${type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                    }`;
+            }
+        }
+
+        // ─── FAQ Toggle & Scroll Reveal ───
+        function toggleFaq(item) {
+            const answer = item.querySelector('.faq-answer');
+            const chevron = item.querySelector('.faq-chevron');
+            if (answer.classList.contains('open')) {
+                answer.classList.remove('open');
+                chevron.classList.remove('rotated');
+            } else {
+                document.querySelectorAll('.faq-answer').forEach(el => el.classList.remove('open'));
+                document.querySelectorAll('.faq-chevron').forEach(el => el.classList.remove('rotated'));
+
+                answer.classList.add('open');
+                chevron.classList.add('rotated');
+            }
+        }
+
+        function initScrollReveal() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        // Animate statistic numbers
+                        if (entry.target.querySelector('.stat-number')) {
+                            animateStats();
+                        }
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        let statsAnimated = false;
+        function animateStats() {
+            if (statsAnimated) return;
+            statsAnimated = true;
+            const stats = document.querySelectorAll('.stat-number');
+            stats.forEach(stat => {
+                const text = stat.textContent;
+                const isPercent = text.includes('%');
+                const isLess = text.includes('<');
+                const numericValue = parseFloat(text.replace(/[^0-9.]/g, ''));
+                if (isNaN(numericValue)) return;
+
+                let start = 0;
+                let duration = 1500;
+                let startTime = null;
+
+                function step(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    const progress = Math.min((timestamp - startTime) / duration, 1);
+                    const current = progress * numericValue;
+
+                    if (isLess) {
+                        stat.textContent = `< ${current.toFixed(0)}sn`;
+                    } else if (isPercent) {
+                        stat.textContent = `${current.toFixed(1)}%`;
+                    } else if (text.includes('M+')) {
+                        stat.textContent = `${(current).toFixed(1)}M+`;
+                    } else {
+                        stat.textContent = Math.floor(current) + (text.includes('+') ? '+' : '');
+                    }
+
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        stat.textContent = text; // Garanti son halini yaz
+                    }
+                }
+                window.requestAnimationFrame(step);
+            });
+        }
+
+        // ─── Page Load ───
+        document.addEventListener('DOMContentLoaded', () => {
+            // If token came as hash in URL (Google OAuth callback)
+            if (window.location.hash.includes('access_token=')) {
+                const params = new URLSearchParams(window.location.hash.substring(1));
+                const token = params.get('access_token');
+                if (token) {
+                    localStorage.setItem('access_token', token);
+                    window.history.replaceState(null, null, ' ');
+                }
+            }
+
+            // Clear old localStorage credit data (no longer used)
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('credits_')) localStorage.removeItem(key);
+            }
+            updateUIForAuth();
+            initScrollReveal();
+        });
+    </script>
+</body>
+
+</html>
