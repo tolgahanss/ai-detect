@@ -144,18 +144,26 @@ def _extract_text_from_file(file_path: Path, extension: str) -> str:
 import re
 from transformers import pipeline
 
-# Ücretsiz AI tespit modelini arka planda yükle
-try:
-    ai_detector = pipeline("text-classification", model="roberta-base-openai-detector")
-except Exception as e:
-    print(f"Model yükleme hatası: {e}")
-    ai_detector = None
+# Global değişkeni boş bırakıyoruz, sunucu açılırken yükleme yapmayacak!
+ai_detector = None
 
 def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
+    global ai_detector
+    
     words = text.split()
     if len(words) < 5:
         return {"human": 100, "ai": 0, "sentences": 0, "words": len(words), "sentence_reports": [], "is_blurred": False}
     
+    # Model daha önce yüklenmediyse, İLK SORGIDA burada yüklenecek
+    if ai_detector is None:
+        try:
+            print("[AI DETECT] RoBERTa Modeli ilk kez yükleniyor, bu işlem biraz sürebilir...")
+            ai_detector = pipeline("text-classification", model="roberta-base-openai-detector")
+            print("[AI DETECT] Model başarıyla yüklendi!")
+        except Exception as e:
+            print(f"[AI DETECT] Model yükleme hatası: {e}")
+            ai_detector = None
+
     # Cümleleri ayır
     raw_sentences = re.split(r'(?<=[.!?])\s+', text.strip())
     sentences = [s for s in raw_sentences if len(s.strip()) > 2]
@@ -170,9 +178,7 @@ def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
         ai_score = 0
         if ai_detector:
             try:
-                # Gerçek yapay zeka analizi tetikleniyor
-                result = ai_detector(sentence[:512])[0]  # Model limiti için ilk 512 karakter
-                # Model 'Fake' diyorsa AI'dır, 'Real' diyorsa İnsandır
+                result = ai_detector(sentence[:512])[0]
                 if result['label'] == 'Fake':
                     ai_score = int(result['score'] * 100)
                 else:
@@ -190,7 +196,7 @@ def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
     avg_ai_score = int(total_ai_score / len(sentences)) if sentences else 0
     human_score = 100 - avg_ai_score
 
-    # Paywall maskeleme mantığını aynen koru
+    # Paywall maskeleme mantığını koru
     is_blurred = False
     if not can_see_full and len(sentence_reports) > 1:
         is_blurred = True
