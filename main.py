@@ -142,19 +142,21 @@ def _extract_text_from_file(file_path: Path, extension: str) -> str:
 
 
 import re
+from transformers import pipeline
+
+# Ücretsiz AI tespit modelini arka planda yükle
+try:
+    ai_detector = pipeline("text-classification", model="roberta-base-openai-detector")
+except Exception as e:
+    print(f"Model yükleme hatası: {e}")
+    ai_detector = None
 
 def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
-    """
-    Metnin ne kadarının yapay zeka, ne kadarının insan tarafından yazıldığını
-    belirleyen analiz motoru. (MOCK/Demo amaçlı akıllı algoritma)
-    Ayrıca cümle bazlı detaylı rapor üretir.
-    Eğer can_see_full False ise, raporun büyük bir kısmı sansürlenir.
-    """
     words = text.split()
     if len(words) < 5:
         return {"human": 100, "ai": 0, "sentences": 0, "words": len(words), "sentence_reports": [], "is_blurred": False}
     
-    # Cümlelere ayır (Nokta, ünlem, soru işaretinden sonraki boşluklardan)
+    # Cümleleri ayır
     raw_sentences = re.split(r'(?<=[.!?])\s+', text.strip())
     sentences = [s for s in raw_sentences if len(s.strip()) > 2]
     
@@ -164,42 +166,36 @@ def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
     sentence_reports = []
     total_ai_score = 0
     
-    ai_keywords = ["yapay zeka", "ai", "dil modeli", "kapsamlı", "dolayısıyla", "önemlidir", "sonuç olarak", "moreover", "furthermore"]
-    human_keywords = ["bence", "sanırım", "bana göre", "bizim", "hata", "yanlış", "ııı", "şey"]
-
     for sentence in sentences:
-        s_lower = sentence.lower()
-        base_score = (len(sentence) * 11) % 40
-        
-        for kw in ai_keywords:
-            if kw in s_lower:
-                base_score += 30
-        for kw in human_keywords:
-            if kw in s_lower:
-                base_score -= 25
+        ai_score = 0
+        if ai_detector:
+            try:
+                # Gerçek yapay zeka analizi tetikleniyor
+                result = ai_detector(sentence[:512])[0]  # Model limiti için ilk 512 karakter
+                # Model 'Fake' diyorsa AI'dır, 'Real' diyorsa İnsandır
+                if result['label'] == 'Fake':
+                    ai_score = int(result['score'] * 100)
+                else:
+                    ai_score = int((1 - result['score']) * 100)
+            except Exception:
+                ai_score = 0
                 
-        base_score = max(0, min(99, base_score))
-        total_ai_score += base_score
-        
+        total_ai_score += ai_score
         sentence_reports.append({
             "text": sentence,
-            "ai_score": base_score,
+            "ai_score": ai_score,
             "is_masked": False
         })
         
     avg_ai_score = int(total_ai_score / len(sentences)) if sentences else 0
     human_score = 100 - avg_ai_score
 
-    # ── Paywall Maskeleme (Bulanıklık) Mantığı ──
-    # can_see_full: is_premium(geçerli) VEYA credit_count > 0
+    # Paywall maskeleme mantığını aynen koru
     is_blurred = False
     if not can_see_full and len(sentence_reports) > 1:
         is_blurred = True
-        # İlk %10'u veya en az ilk 2 cümleyi temiz bırak
         keep_count = max(2, int(len(sentence_reports) * 0.10))
         for i in range(keep_count, len(sentence_reports)):
-            # Cümleyi tamamen gizle (Backend güvenliği)
-            # Rastgele uzunlukta sansür blokları ekle
             sentence_reports[i]["text"] = "█" * (len(sentence_reports[i]["text"]) // 2 + 5)
             sentence_reports[i]["is_masked"] = True
 
