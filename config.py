@@ -44,6 +44,12 @@ class Settings(BaseSettings):
         description="Google Cloud OAuth Client Secret",
     )
 
+    # ── Lemon Squeezy ──
+    LEMONSQUEEZY_WEBHOOK_SECRET: str = Field(
+        default="",
+        description="Lemon Squeezy Webhook imza doğrulama secret'ı (X-Signature)",
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

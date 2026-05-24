@@ -36,6 +36,7 @@ from auth.router import router as auth_router
 from auth.dependencies import get_current_user, get_current_user_optional
 from auth.utils import is_user_premium, can_user_access_full_report
 from admin.router import router as admin_router
+from webhook.router import router as webhook_router
 from plagiarism import check_plagiarism
 
 # ─────────────────────────── Yapılandırma ───────────────────────────
@@ -98,6 +99,9 @@ app.include_router(auth_router)
 
 # /admin/dashboard, /admin/users — sadece admin erişebilir
 app.include_router(admin_router)
+
+# /api/v1/webhook/lemonsqueezy — Lemon Squeezy abonelik webhook'ları
+app.include_router(webhook_router)
 
 
 # ─────────────────────── Yardımcı Fonksiyonlar ─────────────────────
@@ -513,6 +517,7 @@ async def home(request: Request):
                 "POST /auth/login": "Kullanıcı girişi + JWT token (5 istek/dk)",
                 "GET  /auth/me": "Profil bilgisi (JWT gerekli)",
                 "POST /upload": "Güvenli dosya yükleme (5 istek/dk)",
+                "POST /api/v1/webhook/lemonsqueezy": "Lemon Squeezy abonelik webhook",
                 "GET  /admin/dashboard": "🔒 Admin paneli — istatistikler (admin JWT gerekli)",
                 "GET  /admin/users": "🔒 Kullanıcı listesi (admin JWT gerekli)",
                 "GET  /health": "Sağlık kontrolü (sınırsız)",
