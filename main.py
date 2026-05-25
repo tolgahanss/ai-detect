@@ -13,7 +13,6 @@ Güvenlik katmanları:
 
 
 import os
-import torch
 import uuid
 import shutil
 from pathlib import Path
@@ -147,57 +146,60 @@ def _extract_text_from_file(file_path: Path, extension: str) -> str:
 
 
 import re
-from transformers import pipeline
+import requests
 
-# Global değişkeni boş bırakıyoruz, sunucu açılırken yükleme yapmayacak!
-ai_detector = None
+HF_API_URL = "https://api-inference.huggingface.co/models/roberta-base-openai-detector"
+
+def _query_hf_api(text: str) -> dict:
+    """Hugging Face Inference API'ye metin gönderir ve sonucu döndürür."""
+    try:
+        response = requests.post(HF_API_URL, json={"inputs": text[:512], "options": {"wait_for_model": True}}, timeout=30)
+        if response.status_code == 200:
+            return response.json()
+    except Exception as e:
+        print(f"[AI DETECT] HF API hatası: {e}")
+    return None
+
 
 def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
-    global ai_detector
-    
     words = text.split()
     if len(words) < 5:
         return {"human": 100, "ai": 0, "sentences": 0, "words": len(words), "sentence_reports": [], "is_blurred": False}
-    
-    # Model daha önce yüklenmediyse, İLK SORGIDA burada yüklenecek
-    if ai_detector is None:
-        try:
-            print("[AI DETECT] RoBERTa Modeli ilk kez yükleniyor, bu işlem biraz sürebilir...")
-            ai_detector = pipeline("text-classification", model="roberta-base-openai-detector")
-            print("[AI DETECT] Model başarıyla yüklendi!")
-        except Exception as e:
-            print(f"[AI DETECT] Model yükleme hatası: {e}")
-            ai_detector = None
 
     # Cümleleri ayır
     raw_sentences = re.split(r'(?<=[.!?])\s+', text.strip())
     sentences = [s for s in raw_sentences if len(s.strip()) > 2]
-    
+
     if not sentences:
         sentences = [text.strip()]
-        
+
     sentence_reports = []
     total_ai_score = 0
-    
+
     for sentence in sentences:
         ai_score = 0
-        if ai_detector:
-            try:
-                result = ai_detector(sentence[:512])[0]
-                if result['label'] == 'Fake':
-                    ai_score = int(result['score'] * 100)
-                else:
-                    ai_score = int((1 - result['score']) * 100)
-            except Exception:
-                ai_score = 0
-                
+        try:
+            result = _query_hf_api(sentence)
+            if result and isinstance(result, list) and len(result) > 0:
+                # HF API yanıtı: [[{"label": "Fake", "score": 0.98}, ...]]
+                labels = result[0] if isinstance(result[0], list) else result
+                for item in labels:
+                    if item.get('label') == 'Fake' or item.get('label') == 'LABEL_0':
+                        ai_score = int(item['score'] * 100)
+                        break
+                    elif item.get('label') == 'Real' or item.get('label') == 'LABEL_1':
+                        ai_score = int((1 - item['score']) * 100)
+                        break
+        except Exception:
+            ai_score = 0
+
         total_ai_score += ai_score
         sentence_reports.append({
             "text": sentence,
             "ai_score": ai_score,
             "is_masked": False
         })
-        
+
     avg_ai_score = int(total_ai_score / len(sentences)) if sentences else 0
     human_score = 100 - avg_ai_score
 
@@ -218,6 +220,7 @@ def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
         "sentence_reports": sentence_reports,
         "is_blurred": is_blurred
     }
+
 
 
 def _validate_file_size(content: bytes) -> None:

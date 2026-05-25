@@ -13,5 +13,4 @@ email-validator
 fastapi-sso
 PyPDF2
 python-docx
-transformers
-torch
+requests
