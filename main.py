@@ -153,7 +153,7 @@ HF_API_URL = "https://api-inference.huggingface.co/models/roberta-base-openai-de
 def _query_hf_api(text: str) -> dict:
     """Hugging Face Inference API'ye metin gönderir ve sonucu döndürür."""
     try:
-        response = requests.post(HF_API_URL, json={"inputs": text[:512], "options": {"wait_for_model": True}}, timeout=30)
+        response = requests.post(HF_API_URL, json={"inputs": text[:512], "options": {"wait_for_model": True}}, timeout=10)
         print(f"HUGGINGFACE STATUS: {response.status_code}")
         try:
             resp_json = response.json()
