@@ -204,7 +204,7 @@ serve(async (req) => {
     }
 
     // Hugging Face AI detection
-    const HF_API_URL = "https://api-inference.huggingface.co/models/roberta-base-openai-detector";
+    const HF_API_URL = "https://api-inference.huggingface.co/models/Daxier/roberta-base-openai-detector";
     const hfToken = Deno.env.get("HF_TOKEN") || "";
     if (!hfToken) {
       return new Response(JSON.stringify({ detail: "Sistem Yapılandırma Hatası: HF_TOKEN ortam değişkeni ayarlanmamış." }), {
@@ -236,10 +236,11 @@ serve(async (req) => {
           if (Array.isArray(result) && result.length > 0) {
             const labels = Array.isArray(result[0]) ? result[0] : result;
             for (const item of labels) {
-              if (item.label === "Fake" || item.label === "LABEL_0") {
+              const lbl = String(item.label).toLowerCase();
+              if (lbl === "fake" || lbl === "label_0" || lbl === "ai" || lbl === "0") {
                 aiScore = Math.round(item.score * 100);
                 break;
-              } else if (item.label === "Real" || item.label === "LABEL_1") {
+              } else if (lbl === "real" || lbl === "label_1" || lbl === "human" || lbl === "1") {
                 aiScore = Math.round((1 - item.score) * 100);
                 break;
               }
