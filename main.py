@@ -13,6 +13,7 @@ Güvenlik katmanları:
 
 
 import os
+import torch
 import uuid
 import shutil
 from pathlib import Path
