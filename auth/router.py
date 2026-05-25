@@ -45,7 +45,7 @@ router = APIRouter(
 google_sso = GoogleSSO(
     client_id=settings.GOOGLE_CLIENT_ID,
     client_secret=settings.GOOGLE_CLIENT_SECRET,
-    redirect_uri="http://127.0.0.1:8000/auth/google/callback",
+    redirect_uri=settings.GOOGLE_REDIRECT_URI,
     allow_insecure_http=True
 )
 
@@ -329,8 +329,8 @@ async def google_callback(request: Request):
         }
     )
     
-    # Frontend'e token ile yönlendir (Local Live Server genelde port 5500 kullanır)
+    # Frontend'e token ile yönlendir
     # Token URL hash (#) içinde gönderiliyor
-    frontend_url = "http://127.0.0.1:5500/index.html"
+    frontend_url = settings.FRONTEND_URL
     return RedirectResponse(url=f"{frontend_url}#access_token={access_token}")
 

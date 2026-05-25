@@ -50,6 +50,16 @@ class Settings(BaseSettings):
         description="Lemon Squeezy Webhook imza doğrulama secret'ı (X-Signature)",
     )
 
+    # ── URLs (Dynamic for Local/Production) ──
+    GOOGLE_REDIRECT_URI: str = Field(
+        default="http://127.0.0.1:8000/auth/google/callback",
+        description="Google OAuth redirect URI",
+    )
+    FRONTEND_URL: str = Field(
+        default="http://127.0.0.1:5500/index.html",
+        description="Frontend URL for redirection after OAuth login",
+    )
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
