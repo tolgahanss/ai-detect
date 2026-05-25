@@ -1798,9 +1798,25 @@
                 resultPromise = fetchAPI('/upload', { method: 'POST', body: formData });
             } else {
                 const SUPABASE_FUNC_URL = 'https://uvkocqokxeueajpssaew.supabase.co/functions/v1/analyze-text';
-                const token = localStorage.getItem('access_token');
+                let token = localStorage.getItem('access_token');
+                if (!token) {
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && (key.includes('auth-token') || key.startsWith('sb-'))) {
+                            try {
+                                const item = JSON.parse(localStorage.getItem(key));
+                                if (item && item.access_token) {
+                                    token = item.access_token;
+                                    break;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
                 const headers = { 'Content-Type': 'application/json' };
-                if (token) headers['Authorization'] = `Bearer ${token}`;
+                if (token) {
+                    headers['Authorization'] = 'Bearer ' + token;
+                }
                 resultPromise = fetch(SUPABASE_FUNC_URL, {
                     method: 'POST',
                     headers: headers,
@@ -1861,15 +1877,7 @@
                 let isCreditError = false;
                 if (typeof detail === 'string' && (detail.includes('Analiz hakkı') || detail.includes('paket') || detail.includes('credit') || detail.includes('package') || detail.includes('Credit'))) isCreditError = true;
 
-                if (result.status === 401) {
-                    // Token invalid/expired -> log out, open login
-                    localStorage.removeItem('access_token');
-                    currentUserData = null;
-                    refreshCreditUI();
-                    toggleAuthView('login');
-                    toggleModal('loginModal');
-                    showMessage("Your session has expired. Please log in again.", "error");
-                } else if (result.status === 403 && isCreditError) {
+                if (result.status === 403 && isCreditError) {
                     openCreditModal();
                 } else {
                     let errorTxt = detail || "An error occurred.";

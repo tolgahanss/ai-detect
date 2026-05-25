@@ -66,23 +66,49 @@ serve(async (req) => {
     }
     const token = authHeader.substring(7);
 
-    // Verify Custom JWT from Render Backend
+    // Verify Custom JWT from Render Backend OR native Supabase session token
     const jwtSecretStr = Deno.env.get("JWT_SECRET_KEY") || "b9ac7f5287fc4c969cfebc06d3e629de7a2c27a7ac3d1657b540d413eeb2424e";
-    const encoder = new TextEncoder();
-    const keyBuf = encoder.encode(jwtSecretStr);
-    const key = await crypto.subtle.importKey(
-      "raw",
-      keyBuf,
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["verify"]
-    );
+    const supabaseSecret = Deno.env.get("JWT_SECRET") || Deno.env.get("SUPABASE_JWT_SECRET") || "";
 
-    let payload;
+    let payload: any = null;
+    let verificationError: Error | null = null;
+
+    // Try custom secret first (since frontend sends FastAPI custom tokens)
     try {
+      const encoder = new TextEncoder();
+      const keyBuf = encoder.encode(jwtSecretStr);
+      const key = await crypto.subtle.importKey(
+        "raw",
+        keyBuf,
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["verify"]
+      );
       payload = await verify(token, key);
     } catch (err) {
-      return new Response(JSON.stringify({ detail: "Kimlik doğrulama başarısız: " + err.message }), {
+      verificationError = err;
+    }
+
+    // Try supabase secret if payload is still null
+    if (!payload && supabaseSecret) {
+      try {
+        const encoder = new TextEncoder();
+        const keyBuf = encoder.encode(supabaseSecret);
+        const key = await crypto.subtle.importKey(
+          "raw",
+          keyBuf,
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["verify"]
+        );
+        payload = await verify(token, key);
+      } catch (err) {
+        verificationError = err;
+      }
+    }
+
+    if (!payload) {
+      return new Response(JSON.stringify({ detail: "Kimlik doğrulama başarısız: " + (verificationError?.message || "Geçersiz token.") }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -180,6 +206,12 @@ serve(async (req) => {
     // Hugging Face AI detection
     const HF_API_URL = "https://api-inference.huggingface.co/models/roberta-base-openai-detector";
     const hfToken = Deno.env.get("HF_TOKEN") || "";
+    if (!hfToken) {
+      return new Response(JSON.stringify({ detail: "Sistem Yapılandırma Hatası: HF_TOKEN ortam değişkeni ayarlanmamış." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const sentenceReports = [];
     let totalAiScore = 0;
@@ -215,9 +247,29 @@ serve(async (req) => {
           }
         } else {
           console.error(`HF API returned status ${hfRes.status}`);
+          const errData = await hfRes.json().catch(() => ({}));
+          const errMsg = errData.error || errData.message || `HF API status ${hfRes.status}`;
+          let clientMsg = "AI analiz servisi şu an yoğun veya ulaşılamaz durumda. Lütfen birkaç saniye sonra tekrar deneyin.";
+          if (hfRes.status === 401) {
+            clientMsg = "AI analiz servisi kimlik doğrulama hatası (HF_TOKEN geçersiz veya eksik).";
+          } else if (hfRes.status === 503) {
+            clientMsg = "AI modeli şu an yükleniyor, lütfen birkaç saniye sonra tekrar deneyin.";
+          } else if (hfRes.status === 429) {
+            clientMsg = "AI analiz servisi istek limiti aşıldı. Lütfen biraz bekleyin.";
+          }
+          return new Response(JSON.stringify({ detail: clientMsg, hf_error: errMsg }), {
+            status: hfRes.status === 401 ? 500 : 503,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
         }
       } catch (err) {
         console.error("Error querying HF API: ", err);
+        return new Response(JSON.stringify({
+          detail: "AI analiz servisine bağlanırken bir ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin."
+        }), {
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
       totalAiScore += aiScore;
