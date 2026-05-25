@@ -1797,6 +1797,7 @@
                 formData.append('file', selectedFile);
                 resultPromise = fetchAPI('/upload', { method: 'POST', body: formData });
             } else {
+                // Direct request to Supabase Edge Function (Render connection is completely bypassed here)
                 const SUPABASE_FUNC_URL = 'https://uvkocqokxeueajpssaew.supabase.co/functions/v1/analyze-text';
                 let token = localStorage.getItem('access_token');
                 if (!token) {
