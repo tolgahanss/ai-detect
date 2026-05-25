@@ -154,11 +154,34 @@ def _query_hf_api(text: str) -> dict:
     """Hugging Face Inference API'ye metin gönderir ve sonucu döndürür."""
     try:
         response = requests.post(HF_API_URL, json={"inputs": text[:512], "options": {"wait_for_model": True}}, timeout=30)
+        print(f"HUGGINGFACE STATUS: {response.status_code}")
+        try:
+            resp_json = response.json()
+            print(f"HUGGINGFACE CEVABI: {resp_json}")
+        except Exception:
+            resp_json = None
+            print(f"HUGGINGFACE CEVABI (RAW): {response.text}")
+
         if response.status_code == 200:
-            return response.json()
+            return resp_json
+        else:
+            error_msg = f"Status {response.status_code}"
+            if resp_json and isinstance(resp_json, dict) and "error" in resp_json:
+                error_msg += f": {resp_json['error']}"
+            elif response.text:
+                error_msg += f": {response.text[:200]}"
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY if response.status_code >= 500 else status.HTTP_400_BAD_REQUEST,
+                detail=f"Yapay zeka analiz servisi (Hugging Face) hata döndürdü: {error_msg}"
+            )
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"[AI DETECT] HF API hatası: {e}")
-    return None
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Yapay zeka analiz servisine bağlanırken bir hata oluştu: {str(e)}"
+        )
 
 
 def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
@@ -190,6 +213,8 @@ def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
                     elif item.get('label') == 'Real' or item.get('label') == 'LABEL_1':
                         ai_score = int((1 - item['score']) * 100)
                         break
+        except HTTPException:
+            raise
         except Exception:
             ai_score = 0
 
