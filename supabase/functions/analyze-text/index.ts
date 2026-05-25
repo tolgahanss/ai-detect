@@ -204,7 +204,7 @@ serve(async (req) => {
     }
 
     // Hugging Face AI detection
-    const HF_API_URL = "https://api-inference.huggingface.co/models/Daxier/roberta-base-openai-detector";
+    const HF_API_URL = "https://router.huggingface.co/hf-inference/models/Daxier/roberta-base-openai-detector";
     const hfToken = Deno.env.get("HF_TOKEN") || "";
     if (!hfToken) {
       return new Response(JSON.stringify({ detail: "Sistem Yapılandırma Hatası: HF_TOKEN ortam değişkeni ayarlanmamış." }), {
@@ -266,7 +266,8 @@ serve(async (req) => {
       } catch (err) {
         console.error("Error querying HF API: ", err);
         return new Response(JSON.stringify({
-          detail: "AI analiz servisine bağlanırken bir ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin."
+          detail: "AI analiz servisine bağlanırken bir ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.",
+          error_message: err.message,
         }), {
           status: 503,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
