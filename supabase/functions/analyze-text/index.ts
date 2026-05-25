@@ -50,7 +50,7 @@ function editDistance(s1: string, s2: string): number {
   return costs[s2.length];
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   // CORS Preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -86,7 +86,7 @@ serve(async (req) => {
       );
       payload = await verify(token, key);
     } catch (err) {
-      verificationError = err;
+      verificationError = err as any;
     }
 
     // Try supabase secret if payload is still null
@@ -103,7 +103,7 @@ serve(async (req) => {
         );
         payload = await verify(token, key);
       } catch (err) {
-        verificationError = err;
+        verificationError = err as any;
       }
     }
 
@@ -267,7 +267,7 @@ serve(async (req) => {
         console.error("Error querying HF API: ", err);
         return new Response(JSON.stringify({
           detail: "AI analiz servisine bağlanırken bir ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.",
-          error_message: err.message,
+          error_message: (err as any).message,
         }), {
           status: 503,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -413,7 +413,7 @@ serve(async (req) => {
     });
 
   } catch (err) {
-    return new Response(JSON.stringify({ detail: "Sunucu hatası: " + err.message }), {
+    return new Response(JSON.stringify({ detail: "Sunucu hatası: " + (err as any).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
