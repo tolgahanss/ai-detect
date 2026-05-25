@@ -148,102 +148,42 @@ def _extract_text_from_file(file_path: Path, extension: str) -> str:
 import re
 import requests
 
-HF_API_URL = "https://api-inference.huggingface.co/models/roberta-base-openai-detector"
-
-def _query_hf_api(text: str) -> dict:
-    """Hugging Face Inference API'ye metin gönderir ve sonucu döndürür."""
+def _analyze_ai_content(text: str, auth_token: str = None, can_see_full: bool = False) -> dict:
+    """Calls the Supabase Edge Function to analyze the text without decrementing credit."""
     try:
-        response = requests.post(HF_API_URL, json={"inputs": text[:512], "options": {"wait_for_model": True}}, timeout=10)
-        print(f"HUGGINGFACE STATUS: {response.status_code}")
-        try:
-            resp_json = response.json()
-            print(f"HUGGINGFACE CEVABI: {resp_json}")
-        except Exception:
-            resp_json = None
-            print(f"HUGGINGFACE CEVABI (RAW): {response.text}")
+        supabase_func_url = "https://uvkocqokxeueajpssaew.supabase.co/functions/v1/analyze-text"
+        headers = {"Content-Type": "application/json"}
+        if auth_token:
+            headers["Authorization"] = auth_token
 
+        payload = {
+            "text": text,
+            "decrement_credit": False
+        }
+
+        response = requests.post(supabase_func_url, json=payload, headers=headers, timeout=30)
         if response.status_code == 200:
-            return resp_json
+            res_json = response.json()
+            return res_json.get("analysis", {
+                "human": 100,
+                "ai": 0,
+                "sentences": 0,
+                "words": len(text.split()),
+                "sentence_reports": [],
+                "is_blurred": False
+            })
         else:
-            error_msg = f"Status {response.status_code}"
-            if resp_json and isinstance(resp_json, dict) and "error" in resp_json:
-                error_msg += f": {resp_json['error']}"
-            elif response.text:
-                error_msg += f": {response.text[:200]}"
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY if response.status_code >= 500 else status.HTTP_400_BAD_REQUEST,
-                detail=f"Yapay zeka analiz servisi (Hugging Face) hata döndürdü: {error_msg}"
-            )
-    except HTTPException:
-        raise
+            print(f"[AI DETECT] Edge Function error status {response.status_code}: {response.text}")
     except Exception as e:
-        print(f"[AI DETECT] HF API hatası: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Yapay zeka analiz servisine bağlanırken bir hata oluştu: {str(e)}"
-        )
-
-
-def _analyze_ai_content(text: str, can_see_full: bool = False) -> dict:
-    words = text.split()
-    if len(words) < 5:
-        return {"human": 100, "ai": 0, "sentences": 0, "words": len(words), "sentence_reports": [], "is_blurred": False}
-
-    # Cümleleri ayır
-    raw_sentences = re.split(r'(?<=[.!?])\s+', text.strip())
-    sentences = [s for s in raw_sentences if len(s.strip()) > 2]
-
-    if not sentences:
-        sentences = [text.strip()]
-
-    sentence_reports = []
-    total_ai_score = 0
-
-    for sentence in sentences:
-        ai_score = 0
-        try:
-            result = _query_hf_api(sentence)
-            if result and isinstance(result, list) and len(result) > 0:
-                # HF API yanıtı: [[{"label": "Fake", "score": 0.98}, ...]]
-                labels = result[0] if isinstance(result[0], list) else result
-                for item in labels:
-                    if item.get('label') == 'Fake' or item.get('label') == 'LABEL_0':
-                        ai_score = int(item['score'] * 100)
-                        break
-                    elif item.get('label') == 'Real' or item.get('label') == 'LABEL_1':
-                        ai_score = int((1 - item['score']) * 100)
-                        break
-        except HTTPException:
-            raise
-        except Exception:
-            ai_score = 0
-
-        total_ai_score += ai_score
-        sentence_reports.append({
-            "text": sentence,
-            "ai_score": ai_score,
-            "is_masked": False
-        })
-
-    avg_ai_score = int(total_ai_score / len(sentences)) if sentences else 0
-    human_score = 100 - avg_ai_score
-
-    # Paywall maskeleme mantığını koru
-    is_blurred = False
-    if not can_see_full and len(sentence_reports) > 1:
-        is_blurred = True
-        keep_count = max(2, int(len(sentence_reports) * 0.10))
-        for i in range(keep_count, len(sentence_reports)):
-            sentence_reports[i]["text"] = "█" * (len(sentence_reports[i]["text"]) // 2 + 5)
-            sentence_reports[i]["is_masked"] = True
+        print(f"[AI DETECT] Edge Function connection error: {e}")
 
     return {
-        "human": human_score,
-        "ai": avg_ai_score,
-        "sentences": len(sentences),
-        "words": len(words),
-        "sentence_reports": sentence_reports,
-        "is_blurred": is_blurred
+        "human": 100,
+        "ai": 0,
+        "sentences": 0,
+        "words": len(text.split()),
+        "sentence_reports": [],
+        "is_blurred": False
     }
 
 
@@ -400,7 +340,11 @@ async def upload_file(
 
     # ── 7. Metin Çıkarma ve AI Analizi ──
     extracted_text = _extract_text_from_file(saved_path, extension)
-    analysis_result = _analyze_ai_content(extracted_text, can_see_full=can_see_full)
+    analysis_result = _analyze_ai_content(
+        extracted_text,
+        auth_token=request.headers.get("Authorization"),
+        can_see_full=can_see_full
+    )
 
     # ── 8. İntihal / Benzerlik Taraması (plan kontrolü) ──
     has_plagiarism_access = can_user_access_plagiarism(current_user)
@@ -436,93 +380,6 @@ async def upload_file(
         "message": "Dosya başarıyla analiz edildi.",
         "original_filename": file.filename,
         "detected_mime_type": detected_mime,
-        "analysis": analysis_result,
-        "plagiarism": plagiarism_result,
-        "remaining_credits": remaining_credits,
-    }
-
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=response_content,
-    )
-
-
-# ─────────────────────── Metin Analizi Endpoint ───────────────────
-
-class TextAnalyzeRequest(BaseModel):
-    text: str = Field(..., description="Analiz edilecek metin")
-
-@app.post(
-    "/analyze-text",
-    summary="Metin Analizi",
-    response_description="Başarılı analiz bilgisi",
-    status_code=status.HTTP_200_OK,
-    tags=["Analiz"],
-)
-@limiter.limit("5/minute")
-async def analyze_text(
-    request: Request,
-    data: TextAnalyzeRequest,
-    current_user: dict = Depends(get_current_user),
-):
-    """
-    Güvenli metin analizi endpoint'i.
-    Giriş zorunlu. Premium bypass ile sınırsız tarama.
-    Premium değilse 1 kredi düşer.
-    """
-    # ── Premium & Kredi kontrolü ──
-    user_is_premium = is_user_premium(current_user)
-    can_see_full = can_user_access_full_report(current_user)
-
-    if not user_is_premium:
-        credit_count = current_user.get("credit_count", 0)
-        if credit_count <= 0:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Analiz hakkınız kalmadı. Lütfen paket satın alın.",
-            )
-
-    word_count = len(data.text.split())
-    if word_count > 1000:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Metin 1000 kelimeden uzun olamaz.",
-        )
-    
-    # AI Analizi
-    analysis_result = _analyze_ai_content(data.text, can_see_full=can_see_full)
-
-    # ── İntihal / Benzerlik Taraması (plan kontrolü) ──
-    has_plagiarism_access = can_user_access_plagiarism(current_user)
-    if has_plagiarism_access:
-        plagiarism_result = await check_plagiarism(data.text, can_see_full=can_see_full)
-    else:
-        plagiarism_result = {
-            "restricted": True,
-            "message": "İntihal taraması için paketinizi Professional veya Enterprise'a yükseltin.",
-        }
-
-    # ── Kredi düş (Premium kullanıcılar bypass) ──
-    remaining_credits = None
-    if user_is_premium:
-        remaining_credits = -1  # Frontend'e sınırsız sinyali
-    else:
-        try:
-            from database import get_supabase
-            supabase = get_supabase()
-            new_credit = max(0, current_user.get("credit_count", 0) - 1)
-            supabase.update(
-                table="users",
-                data={"credit_count": new_credit},
-                filters={"id": current_user["id"]},
-            )
-            remaining_credits = new_credit
-        except Exception as e:
-            print(f"Kredi düşme hatası: {e}")
-            remaining_credits = current_user.get("credit_count", 0)
-    
-    response_content = {
-        "message": "Metin başarıyla analiz edildi.",
         "analysis": analysis_result,
         "plagiarism": plagiarism_result,
         "remaining_credits": remaining_credits,
