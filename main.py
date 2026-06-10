@@ -34,10 +34,9 @@ from slowapi.errors import RateLimitExceeded
 
 from auth.router import router as auth_router
 from auth.dependencies import get_current_user, get_current_user_optional
-from auth.utils import is_user_premium, can_user_access_full_report, can_user_access_plagiarism
+from auth.utils import is_user_premium, can_user_access_full_report
 from admin.router import router as admin_router
 from webhook.router import router as webhook_router
-from plagiarism import check_plagiarism
 
 # ─────────────────────────── Yapılandırma ───────────────────────────
 
@@ -346,15 +345,7 @@ async def upload_file(
         can_see_full=can_see_full
     )
 
-    # ── 8. İntihal / Benzerlik Taraması (plan kontrolü) ──
-    has_plagiarism_access = can_user_access_plagiarism(current_user)
-    if has_plagiarism_access:
-        plagiarism_result = await check_plagiarism(extracted_text, can_see_full=can_see_full)
-    else:
-        plagiarism_result = {
-            "restricted": True,
-            "message": "İntihal taraması için paketinizi Professional veya Enterprise'a yükseltin.",
-        }
+
 
     # ── 9. Kredi Düş (Premium kullanıcılar bypass) ──
     remaining_credits = None
@@ -381,7 +372,6 @@ async def upload_file(
         "original_filename": file.filename,
         "detected_mime_type": detected_mime,
         "analysis": analysis_result,
-        "plagiarism": plagiarism_result,
         "remaining_credits": remaining_credits,
     }
 

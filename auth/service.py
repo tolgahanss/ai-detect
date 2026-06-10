@@ -145,7 +145,7 @@ def db_get_user_by_id(supabase_client, user_id: str) -> Optional[dict]:
     """
     results = supabase_client.select(
         table="users",
-        columns="id, email, username, credit_count, is_premium, premium_until",
+        columns="id, email, username, credit_count, is_premium, premium_until, plan_type, role",
         filters={"id": user_id},
     )
     if results:
