@@ -1,19 +1,13 @@
-"""
-Uygulama yapılandırması.
-Ortam değişkenlerini .env dosyasından okur ve doğrular.
-"""
-
 from pydantic_settings import BaseSettings
 from pydantic import Field
 
-
 class Settings(BaseSettings):
-    """Uygulama yapılandırma modeli — tüm ayarlar ortam değişkenlerinden okunur."""
+    """Uygulama yapılandırma modeli — tüm ayarlar varsayılan değerlerle garantiye alındı."""
 
     # ── Supabase ──
     SUPABASE_URL: str = Field(
         default="https://uvkocqokxeueajpssaew.supabase.co",
-        description="Supabase proje URL'i (örn: https://xxxxx.supabase.co)",
+        description="Supabase proje URL'i",
     )
     SUPABASE_KEY: str = Field(
         default="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2a29jcW9reGV1ZWFqcHNzYWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDA3NDIsImV4cCI6MjA5NDcxNjc0Mn0.P14jCGhTRuUPbGXGCly-BzVyT5GCArx1TwqgvmFH8XQ",
@@ -22,7 +16,7 @@ class Settings(BaseSettings):
 
     # ── JWT ──
     JWT_SECRET_KEY: str = Field(
-        ...,
+        default="b9ac7f5287fc4c969cfebc06d3e629de7a2c27a7ac3d1657b540d413eeb2424e",
         description="JWT token imzalama için gizli anahtar",
     )
     JWT_ALGORITHM: str = Field(
@@ -47,10 +41,10 @@ class Settings(BaseSettings):
     # ── Lemon Squeezy ──
     LEMONSQUEEZY_WEBHOOK_SECRET: str = Field(
         default="",
-        description="Lemon Squeezy Webhook imza doğrulama secret'ı (X-Signature)",
+        description="Lemon Squeezy Webhook imza doğrulama secret'ı",
     )
 
-    # ── URLs (Dynamic for Local/Production) ──
+    # ── URLs ──
     GOOGLE_REDIRECT_URI: str = Field(
         default="http://127.0.0.1:8000/auth/google/callback",
         description="Google OAuth redirect URI",
@@ -66,6 +60,4 @@ class Settings(BaseSettings):
         "case_sensitive": True,
     }
 
-
-# Singleton yapılandırma nesnesi
 settings = Settings()
