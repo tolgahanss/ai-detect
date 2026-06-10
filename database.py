@@ -1,27 +1,8 @@
-"""
-Supabase veritabanı bağlantısı — PostgREST API üzerinden.
-
-Supabase'in arka planında PostgREST kullanır. Tüm sorgular
-otomatik olarak parametrize edilir → SQL Injection imkansız.
-
-NOT: Ağır 'supabase' paketi yerine doğrudan httpx ile PostgREST API
-kullanıyoruz. Bu, aynı güvenlik seviyesini çok daha hafif bağımlılıklarla sağlar.
-"""
-
 import httpx
-from config import settings
-
 
 class SupabaseClient:
-    """
-    Hafif Supabase REST API client'ı.
-
-    PostgREST API üzerinden çalışır — tüm sorgular otomatik
-    parametrize edilir, SQL Injection riski yoktur.
-    """
-
     def __init__(self, url: str, key: str):
-        # ── SİBER ZIRH: Tüm gizli boşlukları, tırnakları ve görünmez \r karakterlerini kökten temizliyoruz ──
+        # ── SİBER ZIRH: Tüm pislikleri temizliyoruz ──
         cleaned_url = url.strip().strip('"').strip("'").rstrip("/")
         cleaned_key = key.strip().strip('"').strip("'")
 
@@ -30,6 +11,7 @@ class SupabaseClient:
             self.rest_url = self.base_url
         else:
             self.rest_url = f"{self.base_url}/rest/v1"
+
         self.headers = {
             "apikey": cleaned_key,
             "Authorization": f"Bearer {cleaned_key}",
@@ -37,135 +19,69 @@ class SupabaseClient:
             "Prefer": "return=representation",
         }
         self._client = httpx.Client(headers=self.headers, timeout=10.0)
+        
+        # ── SİBER AJAN: Render gercekte nereye gidiyor? (Loglara yazacak) ──
+        print(f"--- SIBER LOG: BAGLANILAN URL = {self.rest_url} ---", flush=True)
 
     def select(self, table: str, columns: str = "*", filters: dict = None) -> list:
-        """
-        Tablodan veri çeker (SELECT).
-
-        PostgREST filtreleri kullanır — değerler otomatik escape edilir.
-        → SQL Injection imkansız.
-
-        Args:
-            table: Tablo adı
-            columns: Seçilecek sütunlar (varsayılan: *)
-            filters: {"sütun": "değer"} formatında filtreler
-
-        Returns:
-            Eşleşen satırların listesi
-        """
         params = {"select": columns}
         if filters:
-            for key, value in filters.items():
-                params[key] = f"eq.{value}"
-
-        response = self._client.get(f"{self.rest_url}/{table}", params=params)
-        response.raise_for_status()
-        return response.json()
+            for k, v in filters.items():
+                params[k] = f"eq.{v}"
+        try:
+            response = self._client.get(f"{self.rest_url}/{table}", params=params)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            print(f"--- SIBER LOG HATA: GET {self.rest_url}/{table} BASARISIZ. Detay: {str(e)}", flush=True)
+            raise e
 
     def insert(self, table: str, data: dict) -> list:
-        """
-        Tabloya yeni kayıt ekler (INSERT).
-
-        JSON body olarak gönderilir — PostgREST tarafında
-        parametrize edilir → SQL Injection imkansız.
-
-        Args:
-            table: Tablo adı
-            data: Eklenecek veri dict'i
-
-        Returns:
-            Eklenen satır(lar) listesi
-        """
         response = self._client.post(f"{self.rest_url}/{table}", json=data)
         response.raise_for_status()
         return response.json()
 
     def update(self, table: str, data: dict, filters: dict) -> list:
-        """
-        Tablodaki kayıtları günceller (UPDATE).
-
-        PostgREST filtreleri kullanır → SQL Injection imkansız.
-
-        Args:
-            table: Tablo adı
-            data: Güncellenecek alanlar
-            filters: Hangi kayıtların güncelleneceği
-
-        Returns:
-            Güncellenen satır(lar) listesi
-        """
         params = {}
-        for key, value in filters.items():
-            params[key] = f"eq.{value}"
-
-        response = self._client.patch(
-            f"{self.rest_url}/{table}", json=data, params=params
-        )
+        for k, v in filters.items():
+            params[k] = f"eq.{v}"
+        response = self._client.patch(f"{self.rest_url}/{table}", json=data, params=params)
         response.raise_for_status()
         return response.json()
 
     def count(self, table: str, filters: dict = None) -> int:
-        """
-        Tablodaki kayıt sayısını döndürür (COUNT).
-
-        PostgREST'in HEAD + Prefer: count=exact yöntemini kullanır.
-        → SQL Injection imkansız.
-        """
         headers = {**self.headers, "Prefer": "count=exact"}
         params = {"select": "*"}
         if filters:
-            for key, value in filters.items():
-                if isinstance(value, tuple):
-                    # Özel operatör desteği: ("gte", "2024-01-01")
-                    op, val = value
-                    params[key] = f"{op}.{val}"
+            for k, v in filters.items():
+                if isinstance(v, tuple):
+                    op, val = v
+                    params[k] = f"{op}.{val}"
                 else:
-                    params[key] = f"eq.{value}"
-
-        response = self._client.get(
-            f"{self.rest_url}/{table}",
-            params=params,
-            headers=headers,
-        )
+                    params[k] = f"eq.{v}"
+        response = self._client.get(f"{self.rest_url}/{table}", params=params, headers=headers)
         response.raise_for_status()
-
-        # PostgREST Content-Range header'ından toplam sayı
         content_range = response.headers.get("content-range", "")
         if "/" in content_range:
             total = content_range.split("/")[-1]
             return int(total) if total != "*" else 0
         return len(response.json())
 
-    def select_with_filters(
-        self, table: str, columns: str = "*", raw_filters: dict = None
-    ) -> list:
-        """
-        Gelişmiş filtrelerle SELECT sorgusu.
-
-        raw_filters, PostgREST operatörlerini doğrudan destekler:
-          {"credits": "lte.0"}  → credits <= 0
-          {"created_at": "gte.2024-01-01"}  → created_at >= 2024-01-01
-
-        → SQL Injection imkansız — değerler PostgREST tarafında parametrize edilir.
-        """
+    def select_with_filters(self, table: str, columns: str = "*", raw_filters: dict = None) -> list:
         params = {"select": columns}
         if raw_filters:
             params.update(raw_filters)
-
         response = self._client.get(f"{self.rest_url}/{table}", params=params)
         response.raise_for_status()
         return response.json()
 
 
-# ─────────────────────── Singleton Client ──────────────────────────
-
 _client: SupabaseClient | None = None
 
-
 def get_supabase() -> SupabaseClient:
-    """Supabase client singleton'ını döndürür."""
     global _client
     if _client is None:
+        # ── HİÇBİR ENV (ÇEVRE) DEĞİŞKENİNE GÜVENMİYORUZ, ADRES VE ŞİFREYİ ÇİVİ GİBİ ÇAKIYORUZ ──
         _client = SupabaseClient(
             url="https://uvkocqokxeueajpssaew.supabase.co",
             key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2a29jcW9reGV1ZWFqcHNzYWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDA3NDIsImV4cCI6MjA5NDcxNjc0Mn0.P14jCGhTRuUPbGXGCly-BzVyT5GCArx1TwqgvmFH8XQ"
