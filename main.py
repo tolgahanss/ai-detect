@@ -275,6 +275,94 @@ def _save_file(content: bytes, original_filename: str, extension: str) -> Path:
     return file_path
 
 
+# ─────────────────────── Metin Analiz Endpoint ─────────────────────
+
+class AnalyzeTextRequest(BaseModel):
+    text: str
+
+
+@app.post(
+    "/analyze-text",
+    summary="Metin AI analizi",
+    response_description="AI analiz sonucu",
+    status_code=status.HTTP_200_OK,
+    tags=["AI Analiz"],
+)
+@limiter.limit("10/minute")  # IP başına dakikada maks. 10 istek
+async def analyze_text_route(
+    request: Request,
+    body: AnalyzeTextRequest,
+    current_user: dict | None = Depends(get_current_user_optional),
+):
+    """
+    Metin AI analizi endpoint'i.
+    Giriş yapan kullanıcıların kredisi düşürülür (Premium kullanıcılar hariç).
+    Giriş yapmayan kullanıcılar (bypassed) varsayılan limitler ile analiz yapabilir.
+    """
+    text = body.text.strip()
+    if not text:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Analiz için metin gönderilmelidir.",
+        )
+
+    # ── 0. Kullanıcı ve Premium / Kredi Kontrolü ──
+    user_is_premium = False
+    can_see_full = True  # default for guests
+    user_id = None
+    credit_count = 0
+
+    if current_user:
+        user_is_premium = is_user_premium(current_user)
+        can_see_full = can_user_access_full_report(current_user)
+        user_id = current_user.get("id")
+        credit_count = current_user.get("credit_count", 0)
+
+        if not user_is_premium and credit_count <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Analiz hakkınız kalmadı. Lütfen paket satın alın.",
+            )
+
+    # ── 1. AI Analizi ──
+    analysis_result = _analyze_ai_content(
+        text,
+        auth_token=request.headers.get("Authorization"),
+        can_see_full=can_see_full
+    )
+
+    # ── 2. Kredi Düş (Giriş yapmış premium olmayan kullanıcılar için) ──
+    remaining_credits = 999
+    if current_user:
+        if user_is_premium:
+            remaining_credits = -1
+        else:
+            try:
+                from database import get_supabase
+                supabase = get_supabase()
+                new_credit = max(0, credit_count - 1)
+                supabase.update(
+                    table="users",
+                    data={"credit_count": new_credit},
+                    filters={"id": user_id},
+                )
+                remaining_credits = new_credit
+            except Exception as e:
+                print(f"Kredi düşme hatası: {e}")
+                remaining_credits = credit_count
+
+    response_content = {
+        "message": "Metin başarıyla analiz edildi.",
+        "analysis": analysis_result,
+        "remaining_credits": remaining_credits,
+    }
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content=response_content,
+    )
+
+
 # ─────────────────────── Dosya Yükleme Endpoint ───────────────────
 
 

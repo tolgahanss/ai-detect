@@ -21,14 +21,18 @@ class SupabaseClient:
     """
 
     def __init__(self, url: str, key: str):
-        self.base_url = url.rstrip("/")
+        # ── SİBER ZIRH: Tüm gizli boşlukları, tırnakları ve görünmez \r karakterlerini kökten temizliyoruz ──
+        cleaned_url = url.strip().strip('"').strip("'").rstrip("/")
+        cleaned_key = key.strip().strip('"').strip("'")
+
+        self.base_url = cleaned_url
         if self.base_url.endswith("/rest/v1"):
             self.rest_url = self.base_url
         else:
             self.rest_url = f"{self.base_url}/rest/v1"
         self.headers = {
-            "apikey": key,
-            "Authorization": f"Bearer {key}",
+            "apikey": cleaned_key,
+            "Authorization": f"Bearer {cleaned_key}",
             "Content-Type": "application/json",
             "Prefer": "return=representation",
         }

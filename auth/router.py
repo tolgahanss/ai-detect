@@ -332,5 +332,11 @@ async def google_callback(request: Request):
     # Frontend'e token ile yönlendir
     # Token URL hash (#) içinde gönderiliyor
     frontend_url = settings.FRONTEND_URL
+    try:
+        # Redirect to the local server's frontend if accessing via the API server
+        frontend_url = str(request.url_for("serve_frontend"))
+    except Exception:
+        pass
     return RedirectResponse(url=f"{frontend_url}#access_token={access_token}")
+
 
