@@ -12,11 +12,11 @@ class Settings(BaseSettings):
 
     # ── Supabase ──
     SUPABASE_URL: str = Field(
-        ...,
+        default="https://uvkocqokxeueajpssaew.supabase.co",
         description="Supabase proje URL'i (örn: https://xxxxx.supabase.co)",
     )
     SUPABASE_KEY: str = Field(
-        ...,
+        default="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2a29jcW9reGV1ZWFqcHNzYWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDA3NDIsImV4cCI6MjA5NDcxNjc0Mn0.P14jCGhTRuUPbGXGCly-BzVyT5GCArx1TwqgvmFH8XQ",
         description="Supabase anon (public) API key",
     )
 
