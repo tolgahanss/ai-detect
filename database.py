@@ -167,7 +167,7 @@ def get_supabase() -> SupabaseClient:
     global _client
     if _client is None:
         _client = SupabaseClient(
-            url=settings.SUPABASE_URL,
-            key=settings.SUPABASE_KEY,
+            url="https://uvkocqokxeueajpssaew.supabase.co",
+            key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2a29jcW9reGV1ZWFqcHNzYWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNDA3NDIsImV4cCI6MjA5NDcxNjc0Mn0.P14jCGhTRuUPbGXGCly-BzVyT5GCArx1TwqgvmFH8XQ"
         )
     return _client
